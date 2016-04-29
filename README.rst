@@ -47,7 +47,7 @@ to UTC.:
     # datetime.datetime(2016, 1, 1, 16, 0, tzinfo=<UTC>)
 
 
-Make a tz-naive datetime a aware:
+Make a tz-naive datetime aware:
 
 .. code-block:: python
 
