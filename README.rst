@@ -26,8 +26,8 @@ Included functions
    with an optional 'tz' argument for a timezone string.
  - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, and as a function.
  - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, and as a function.
- - now: Find current utc time; aware
- - range_dt: Iterate over datetimes, using several common intervals. Similar to builtin range.
+ - now: Find current utc time; timezone-aware
+ - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
  - move_tz: Change a time from one timezone to another.
 
@@ -64,18 +64,29 @@ Find the current datetime, in UTC:
     # datetime.datetime(2016, 4, 29, 20, 36, 53, 257753, tzinfo=<UTC>)
 
 
-Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day' 
+Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day'
 'hour', 'minute', 'second', 'millisecond', and 'microsecond':
 
 .. code-block:: python
 
     start, end = instant.datetime(2016, 1, 2, 12, 30), instant.datetime(2016, 1, 5, 12, 30)
-    for dt in instant.range_dt(start, end, 'day'):
+    for dt in instant.range_dt(start, end, interval='day'):
         print(dt)
 
     # 2016-01-02 12:30:00+00:00
     # 2016-01-03 12:30:00+00:00
     # 2016-01-04 12:30:00+00:00
+
+    for dt in instant.range_dt(start, end, 4, interval='hour'):
+        print(dt)
+
+    # 2016-01-02 12:30:00+00:00
+    # 2016-01-02 16:30:00+00:00
+    # 2016-01-02 20:30:00+00:00
+    ...
+    # 2016-01-05 00:30:00+00:00
+    # 2016-01-05 04:30:00+00:00
+    # 2016-01-05 08:30:00+00:00
 
 
 Convert a datetime a string. Uses format from Arrow:

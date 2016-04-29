@@ -88,46 +88,46 @@ def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
     return dt.astimezone(pytz.timezone(str))
 
 
-def _count_timedelta(delta: _datetime.timedelta, seconds_in_interval: int) -> int:
+def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int) -> int:
     """Helper function for iterate.  Finds the number of intervals in the timedelta."""
-    return int(delta.total_seconds() / (seconds_in_interval))
+    return int(delta.total_seconds() / (seconds_in_interval * step))
 
 
-def range_dt(start, end, interval='day') -> Iterator[_datetime.datetime]:
+def range_dt(start, end, step=1, interval='day') -> Iterator[_datetime.datetime]:
     """Iterate over Instants or datetimes."""
     # todo deocorator to check for tz-naive?
     if not start.tzinfo or not end.tzinfo:
         raise TzNaiveError
 
-    intervals = partial(_count_timedelta, (end - start))
+    intervals = partial(_count_timedelta, (end - start), step)
 
     if interval == 'week':
         for i in range(intervals(3600 * 24 * 7)):
-            yield start + _datetime.timedelta(weeks=i)
+            yield start + _datetime.timedelta(weeks=i) * step
 
     elif interval == 'day':
         for i in range(intervals(3600 * 24)):
-            yield start + _datetime.timedelta(days=i)
+            yield start + _datetime.timedelta(days=i) * step
 
     elif interval == 'hour':
         for i in range(intervals(3600)):
-            yield start + _datetime.timedelta(hours=i)
+            yield start + _datetime.timedelta(hours=i) * step
 
     elif interval == 'minute':
         for i in range(intervals(60)):
-            yield start + _datetime.timedelta(minutes=i)
+            yield start + _datetime.timedelta(minutes=i) * step
 
     elif interval == 'second':
         for i in range(intervals(1)):
-            yield start + _datetime.timedelta(seconds=i)
+            yield start + _datetime.timedelta(seconds=i) * step
 
     elif interval == 'millisecond':
         for i in range(intervals(1 / 1000)):
-            yield start + _datetime.timedelta(milliseconds=i)
+            yield start + _datetime.timedelta(milliseconds=i) * step
 
     elif interval == 'microsecond':
         for i in range(intervals(1 / 10e6)):
-            yield start + _datetime.timedelta(microseconds=i)
+            yield start + _datetime.timedelta(microseconds=i) * step
 
     else:
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \
