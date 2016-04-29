@@ -1,4 +1,4 @@
-import datetime
+import datetime as _datetime
 from functools import partial
 import re
 from typing import TypeVar, Iterator
@@ -8,93 +8,57 @@ import pytz
 # todo maybe make the funcs work on normal dt objects??
 
 # No need to import datetime if using instant.
-timedelta = datetime.timedelta
+timedelta = _datetime.timedelta
 
 class TzNaiveError(Exception):
     pass
 
 
-class Instant:
-    def __init__(self, year: int, month: int, day: int, hour:int=0, minute:int=0,
-            second:int=0, microsecond:int=0, tzinfo=pytz.utc):
-        # Boilerplate
-        self.year = year
-        self.month = month
-        self.day = day
-        self.hour = hour
-        self.minute = minute
-        self.second = second
-        self.microsecond = microsecond
-        self.tzinfo = tzinfo
-
-        self.datetime = datetime.datetime(year, month, day, hour, minute,
-            second, microsecond, tzinfo)
-
-
-        def __add__(self, other):
-            return self.datetime + other
-
-        def __repr__(self):
-            # return to_iso(self)
-            return self.datetime.isoformat()
-
-        @staticmethod
-        def from_datetime(self, dt: datetime.datetime):
-            return from_datetime(dt)
-
-        @staticmethod
-        def format(format_str: str):
-            return format(format_str)
-
-
-def Instant2(*args, **kwargs):
+# def datetime(*args, **kwargs):
+def datetime(year: int, month: int, day: int, hour:int=0, minute:int=0,
+        second:int=0, microsecond:int=0, tzinfo=None, tz=None):
     """Create a datetime instance, with default tzawareness at UTC."""
-    dt = datetime.datetime(*args, **kwargs)
 
-    if dt.tzinfo:
+    dt = _datetime.datetime(year, month, day, hour, minute, second, microsecond,
+        tzinfo)
+    # dt = _datetime.datetime(*args, **kwargs)
+
+    if tz:  # A string timezone is provided
+        return fix_naive(dt, tz)
+    elif dt.tzinfo:  # A timezone object is provided
         return dt
-    else:
+    else:  # No timezone provided; assume UTC.
         return dt.replace(tzinfo=pytz.utc)
 
 
-moment = TypeVar('Moment', datetime.datetime, Instant)
-
-
-def from_datetime(dt: datetime.datetime) -> Instant:
-    """Convert a datetime.datetime object to an Instant."""
-    return Instant(*_expand(dt))
-
-
-def to_datetime(inst: Instant) -> datetime.datetime:
-    """Convert a datetime.datetime object to an Instant."""
-    return datetime.datetime(*_expand(inst))
-
-
-def now() -> datetime.datetime:
+def now() -> _datetime.datetime:
     """Similar to datetime.datetime.utcnow, but tz-aware."""
     # return from_datetime(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
-    return datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+    return _datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
 
 
-def fix_naive(dt: datetime.datetime) -> datetime.datetime:
-    """Convert a tz-naive datetime to tz-aware @ UTC."""
-    return dt.replace(tzinfo=pytz.utc)
+def fix_naive(dt: _datetime.datetime, tz: str='UTC') -> _datetime.datetime:
+    """Convert a tz-naive datetime to tz-aware. Default to UTC"""
+    return pytz.timezone(tz).localize(dt)
 
 
-def _expand(dt: moment):
+def _expand(dt: _datetime.datetime):
     """Expand arguments from a datetime object or instant."""
     return dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, \
         dt.microsecond, dt.tzinfo
 
 
-def to_iso(dt: moment) -> str:
+def to_iso(dt: _datetime.datetime) -> str:
     """Return a standard ISO 8601 datetime string.  Similar to datetime's
     .isoformat()"""
     # todo placeholder, not quite right.
-    return "{}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}:{:02d}+{}".format(*_expand(dt))
+    # return "{}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}:{:02d}+{}".format(*_expand(dt))
+    if not dt.tzinfo:
+        raise TzNaiveError
+    return dt.isoformat()
 
 
-def to_str(dt: moment, format: str) -> str:
+def to_str(dt: _datetime.datetime, format: str) -> str:
     """Format a datetime or Instant as a string."""
     if not dt.tzinfo:
         raise TzNaiveError
@@ -108,21 +72,28 @@ def to_str(dt: moment, format: str) -> str:
     pattern = re.compile('(YYYY)*|(YYYY)*|(MM)*|(DD)*')
 
 
-def from_str(dt_str: str, format: str) -> Instant:
+def from_str(dt_str: str, format: str) -> _datetime.datetime:
     """Format a string to datetime.  Similar to datetime.strptime."""
     # todo placeholder
-    dt = datetime.datetime.strptime(dt_str, format)
+    dt = _datetime.datetime.strptime(dt_str, format)
     if not dt.tzinfo:
         dt = dt.replace(tzinfo=pytz.utc)
     return dt
 
 
-def _count_timedelta(delta: datetime.timedelta, seconds_in_interval: int) -> int:
+def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
+    """Change a datetime from one timezone to another."""
+    # Datetime provides a ValueError if you use this function on a naive DT, so
+    # no need to explicitly raise an error here.
+    return dt.astimezone(pytz.timezone(str))
+
+
+def _count_timedelta(delta: _datetime.timedelta, seconds_in_interval: int) -> int:
     """Helper function for iterate.  Finds the number of intervals in the timedelta."""
     return int(delta.total_seconds() / (seconds_in_interval))
 
 
-def iterate(start, end, interval='day') -> Iterator[Instant]:
+def range_dt(start, end, interval='day') -> Iterator[_datetime.datetime]:
     """Iterate over Instants or datetimes."""
     # todo deocorator to check for tz-naive?
     if not start.tzinfo or not end.tzinfo:
@@ -132,31 +103,31 @@ def iterate(start, end, interval='day') -> Iterator[Instant]:
 
     if interval == 'week':
         for i in range(intervals(3600 * 24 * 7)):
-            yield start + datetime.timedelta(weeks=i)
+            yield start + _datetime.timedelta(weeks=i)
 
     elif interval == 'day':
         for i in range(intervals(3600 * 24)):
-            yield start + datetime.timedelta(days=i)
+            yield start + _datetime.timedelta(days=i)
 
     elif interval == 'hour':
         for i in range(intervals(3600)):
-            yield start + datetime.timedelta(hours=i)
+            yield start + _datetime.timedelta(hours=i)
 
     elif interval == 'minute':
         for i in range(intervals(60)):
-            yield start + datetime.timedelta(minutes=i)
+            yield start + _datetime.timedelta(minutes=i)
 
     elif interval == 'second':
         for i in range(intervals(1)):
-            yield start + datetime.timedelta(seconds=i)
+            yield start + _datetime.timedelta(seconds=i)
 
     elif interval == 'millisecond':
         for i in range(intervals(1 / 1000)):
-            yield start + datetime.timedelta(milliseconds=i)
+            yield start + _datetime.timedelta(milliseconds=i)
 
     elif interval == 'microsecond':
         for i in range(intervals(1 / 10e6)):
-            yield start + datetime.timedelta(microseconds=i)
+            yield start + _datetime.timedelta(microseconds=i)
 
     else:
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \

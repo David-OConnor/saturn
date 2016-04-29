@@ -1,216 +1,102 @@
-# Problems with Arrow:
-# Unintuitive syntax. Ie replace and to
-# Adding and subtracting Arrows is awkward
-# Still need to import pytz or  dateutil.
-# Slow
-# Treats dates, times, and datetimes as the same thing.
+Instant: Functions for better datetimes
+=======================================
 
 
+Perform common operations on datetimes with clean syntax. Force timezone-aware
+datetimes. All operations are top-level functions: No dealing with
+a methods from multiple modules and objects. Only one import required.
 
-Instant: Better dates and times. For real.
-====================
+There are several existing modules designed to improve Python's datetime functionality.
+Here are some reasons why Instant is different:
 
-Optimized numerical computation using Continuum's Numba. Intended as a drop-in replacement
-for numerical functions in numpy, scipy, or builtins. Provides strong performance boosts.
+ - Uses native datetime.datetime objects for compatibility and speed
+ - Only one import required
+ - Clean, intuitive syntax and function names
+ - Operates exclusively with top-level functions; no sorting through methods
+   from multiple objects and modules
 
-`Numba website <http://numba.pydata.org/>`_
+`Pytz website <https://pypi.python.org/pypi/pytz/>`_
 
-Inputs use numpy arrays. Using other formats like lists, or pandas Dataframes
-will adversely affect speed.
-Rough/early release  - Open to suggestions and bug reports.
+Python 2 is currently unsupported.
 
 Included functions
 ------------------
 
- - sum: Similar to builtin sum, or numpy.sum
- - mean: Similar to numpy.mean
- - var: Variance test, similar to numpy.var
- - cov: Covariance estimation, similar to numpy.cov
- - std: Standard deviation, similar to numpy.std
- - corr: Pearson correlation test, similar to scipy.stats.pearsonr
- - bisect: Similar to standard library bisect.bisect
- - bisect_left: Similar to standard library builtin.bisect_left
- - interp: Linear interpoliation, similar to numpy.interp. x is a one-axis array.
- - interp_one: Linear interpolation, similar to numpy.interp. x is a single value.
- - detrend: Similar to scipy.signal.detrend. Linear or constant trend.
- - ols: Ordinary Least Squares regression solution for two data sets.
- - ols_single: Ordinary Least Squares regression solution for one data set.
- - lin_resids: Residuals calculation from a linear regression with two data sets
- - lin_resids_single: Residuals calculation from a linear regression with one data set.
+ - datetime: Return a timezone-aware datetime.datetime object.  Created the same way as datetime.datetime,
+   with an optional 'tz' argument for a timezone string.
+ - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, and as a function.
+ - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, and as a function.
+ - now: Find current utc time; aware
+ - range_dt: Iterate over datetimes, using several common intervals. Similar to builtin range.
+ - fix_naive: Convert a timezone-naive datetime to an aware one.
+ - move_tz: Change a time from one timezone to another.
 
 
 Basic documentation
 -------------------
 
-.. code-block:: python
-
-    brisk.sum(data: numpy.array) -> float:
-
-Inputs:
-  - data: Input data.
-Ouputs:
- - Sum of all values in data.
-
+Create a timezone-aware datetime. If you don't specify a 'tz' argument, it defaults
+to UTC.:
 
 .. code-block:: python
 
-    brisk.mean(data: numpy.array) -> float:
+    instant.datetime(2016, 1, 1, 16, tz='US/Eastern')
+    # datetime.datetime(2016, 1, 1, 16, 0, tzinfo=<DstTzInfo 'US/Eastern' EST-1 day, 19:00:00 STD>)
 
-Inputs:
-  - data: Input data.
-Ouputs:
- - Mean of all values in data.
+    instant.datetime(2016, 1, 1, 16)
+    # datetime.datetime(2016, 1, 1, 16, 0, tzinfo=<UTC>)
 
 
-.. code-block:: python
-
-    brisk.var(data: numpy.array) -> float:
-
-Inputs:
-  - data: Input data.
-Ouputs:
- - Variance of data.
-
+Make a tz-naive datetime a aware:
 
 .. code-block:: python
 
-    brisk.cov(m: numpy.array, y: numpy.array) -> float:
+    naive = datetime.datetime(2016, 1, 1)
+    instant.fix_naive(naive, "Pacific/Midway")
+    # datetime.datetime(2016, 1, 1, 0, 0, tzinfo=<DstTzInfo 'Pacific/Midway' SST-1 day, 13:00:00 STD>)
 
-Inputs:
-  - m and y: two data sets to find the covariance of. Must be the same size.
 
-Ouputs:
- - Covariance of m and y.
-
+Find the current datetime, in UTC:
 
 .. code-block:: python
 
-    brisk.std(data: numpy.array) -> float:
+    instant.now()
+    # datetime.datetime(2016, 4, 29, 20, 36, 53, 257753, tzinfo=<UTC>)
 
-Inputs:
-  - data: Input data.
 
-Ouputs:
- - Standard deviation of data.
-
+Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day' 
+'hour', 'minute', 'second', 'millisecond', and 'microsecond':
 
 .. code-block:: python
 
-    brisk.corr(x: numpy.array, y: numpy.array) -> float:
+    start, end = instant.datetime(2016, 1, 2, 12, 30), instant.datetime(2016, 1, 5, 12, 30)
+    for dt in instant.range_dt(start, end, 'day'):
+        print(dt)
 
-Inputs:
- - x and y: two numpy.arary data sets to find the pearson correlation of. Must be the same size.
-
-Ouputs:
- - Pearson correlation of m and y.
+    # 2016-01-02 12:30:00+00:00
+    # 2016-01-03 12:30:00+00:00
+    # 2016-01-04 12:30:00+00:00
 
 
-.. code-block:: python
-
-    brisk.bisect(a: float, x: numpy.array) -> int:
-
-Inputs:
- - a: Value to be inserted.
- - x: numpy array to insert a into.
-
-Ouputs:
- - The insertion point for x in a to maintain sorted order.
-
+Convert a datetime a string. Uses format from Arrow:
 
 .. code-block:: python
 
-    brisk.bisect_left(a: float, x: numpy.array) -> int:
+    instant.to_str(instant.now(), 'YYYY-MM-DD hh:mm')
+    # '2016-04-29 03:30'
 
-Inputs:
- - a: Value to be inserted.
- - x: numpy array to insert a into.
 
-Ouputs:
- - The insertion point for x in a to maintain sorted order.
-
+Convert a string to a datetime. Uses format from Arrow:
 
 .. code-block:: python
 
-    brisk.interp(x: numpy.array, xp: numpy.array, fp: numpy.array) -> numpy.array:
+    instant.to_str('2016-04-29 03:30', 'YYYY-MM-DD hh:mm')
+    # datetime.datetime(2016, 4, 29, 3, 30, tzinfo=<UTC>)
 
-Inputs:
- - x: x coordinates of the interpolated values.
- - xp: x coordinates of the data points.
- - yp: y coordinates of the data points. Same size as xp.
 
-Ouputs:
- - The interpolated values.
-
+Convert a datetime a an ISO-8601-format string:
 
 .. code-block:: python
 
-    brisk.interp_one(x: float, xp: numpy.array, fp: numpy.array) -> float:
-
-Inputs:
- - x: x coordinates of the interpolated value.
- - xp: x coordinates of the data points.
- - yp: y coordinates of the data points. Same size as xp.
-
-Ouputs:
- - The interpolated value.
-
-.. code-block:: python
-
-    brisk.detrend(data: numpy.array, type_: str) -> numpy.array:
-
-Inputs:
- - data: The data to detrend
- - type: Use 'c' or 'constant' for constant detrending. Use 'l' or 'linear' for linear detrending.
-
-Ouputs:
- - The detrended data.
-
-
-.. code-block:: python
-
-    brisk.ols(x: numpy.array, y: numpy.array) -> (float, float):
-
-Inputs:
- - x: x values to run regression on.
- - y: y values to run regression on.
-
-Ouputs:
- - A tuple of the resulting slope and intercept.
-
-
-.. code-block:: python
-
-    brisk.ols_single(y: numpy.array) -> (float, float):
-
-Inputs:
- - y: y values to run regression on. x values are inferred to be a range from 0 to y.size.
-
-Ouputs:
- - A tuple of the resulting slope and intercept.
-
-
-.. code-block:: python
-
-    brisk.lin_resids(x: numpy.array, y: numpy.array, slope: float, intercept: float) -> numpy.array:
-
-Inputs:
- - x: x values regression was run on.
- - y: y values regression was run on.
- - slope: Regression slope.
- - intercept: Regression intercept.
-
-Ouputs:
- - An array of the linear residuals.
-
-
-.. code-block:: python
-
-    brisk.lin_resids_single(x: numpy.array, slope: float, intercept: float) -> numpy.array:
-
-Inputs:
- - y: y values regression was run on. x values are inferred to be a range from 0 to y.size.
- - slope: Regression slope.
- - intercept: Regression intercept.
-
-Ouputs:
- - An array of the linear residuals.
+        instant.to_iso(instant.now())
+        # '2016-04-29T20:12:05.807558+00:00'
