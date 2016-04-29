@@ -13,49 +13,111 @@ timedelta = datetime.timedelta
 class TzNaiveError(Exception):
     pass
 
-class Instant(datetime.datetime):
-    def __init__(self, *args, **kwargs):
-        super().__init__()
 
-    def __new__(cls, *args, **kwargs):
-        dt = datetime.datetime(*args, **kwargs)
-        if dt.tzinfo:
-            return dt
-        else:
-            return dt.replace(tzinfo=pytz.utc)
+class Instant:
+    def __init__(self, year: int, month: int, day: int, hour:int=0, minute:int=0,
+            second:int=0, microsecond:int=0, tzinfo=pytz.utc):
+        # Boilerplate
+        self.year = year
+        self.month = month
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.second = second
+        self.microsecond = microsecond
+        self.tzinfo = tzinfo
 
-    @staticmethod
-    def from_datetime(dt: datetime.datetime):
-        return from_datetime(dt)
+        self.datetime = datetime.datetime(year, month, day, hour, minute,
+            second, microsecond, tzinfo)
 
-    @staticmethod
-    def format(format_str: str):
-        return format(format_str)
+
+        def __add__(self, other):
+            return self.datetime + other
+
+        def __repr__(self):
+            # return to_iso(self)
+            return self.datetime.isoformat()
+
+        @staticmethod
+        def from_datetime(self, dt: datetime.datetime):
+            return from_datetime(dt)
+
+        @staticmethod
+        def format(format_str: str):
+            return format(format_str)
+
+
+def Instant2(*args, **kwargs):
+    """Create a datetime instance, with default tzawareness at UTC."""
+    dt = datetime.datetime(*args, **kwargs)
+
+    if dt.tzinfo:
+        return dt
+    else:
+        return dt.replace(tzinfo=pytz.utc)
+
 
 moment = TypeVar('Moment', datetime.datetime, Instant)
 
 
 def from_datetime(dt: datetime.datetime) -> Instant:
     """Convert a datetime.datetime object to an Instant."""
-    args = dt.year, dt.month, dt.day, dt.hour, \
-        dt.minute, dt.second, dt.microsecond, dt.tzinfo
-    return Instant(*args)
+    return Instant(*_expand(dt))
 
 
-def from_string(dt_str: str, format: str) -> Instant:
-    """"""
-    pass
+def to_datetime(inst: Instant) -> datetime.datetime:
+    """Convert a datetime.datetime object to an Instant."""
+    return datetime.datetime(*_expand(inst))
 
 
-def format(dt: moment, format_str: str) -> str:
+def now() -> datetime.datetime:
+    """Similar to datetime.datetime.utcnow, but tz-aware."""
+    # return from_datetime(datetime.datetime.utcnow().replace(tzinfo=pytz.utc))
+    return datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
+
+
+def fix_naive(dt: datetime.datetime) -> datetime.datetime:
+    """Convert a tz-naive datetime to tz-aware @ UTC."""
+    return dt.replace(tzinfo=pytz.utc)
+
+
+def _expand(dt: moment):
+    """Expand arguments from a datetime object or instant."""
+    return dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, \
+        dt.microsecond, dt.tzinfo
+
+
+def to_iso(dt: moment) -> str:
+    """Return a standard ISO 8601 datetime string.  Similar to datetime's
+    .isoformat()"""
+    # todo placeholder, not quite right.
+    return "{}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}:{:02d}+{}".format(*_expand(dt))
+
+
+def to_str(dt: moment, format: str) -> str:
     """Format a datetime or Instant as a string."""
+    if not dt.tzinfo:
+        raise TzNaiveError
+
+    # todo placeholder
+    return dt.strftime(format)
+
     x = 1
     format_re = re.compile('(YYY?Y?|MM?M?M?|Do|DD?D?D?|d?dd?d?|HH?|hh?|mm?|ss?|SS?S?S?S?S?|ZZ?|a|A|X)')
 
     pattern = re.compile('(YYYY)*|(YYYY)*|(MM)*|(DD)*')
 
 
-def count_timedelta(delta: datetime.timedelta, seconds_in_interval: int) -> int:
+def from_str(dt_str: str, format: str) -> Instant:
+    """Format a string to datetime.  Similar to datetime.strptime."""
+    # todo placeholder
+    dt = datetime.datetime.strptime(dt_str, format)
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=pytz.utc)
+    return dt
+
+
+def _count_timedelta(delta: datetime.timedelta, seconds_in_interval: int) -> int:
     """Helper function for iterate.  Finds the number of intervals in the timedelta."""
     return int(delta.total_seconds() / (seconds_in_interval))
 
@@ -66,7 +128,7 @@ def iterate(start, end, interval='day') -> Iterator[Instant]:
     if not start.tzinfo or not end.tzinfo:
         raise TzNaiveError
 
-    intervals = partial(count_timedelta, (end - start))
+    intervals = partial(_count_timedelta, (end - start))
 
     if interval == 'week':
         for i in range(intervals(3600 * 24 * 7)):
