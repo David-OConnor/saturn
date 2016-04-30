@@ -9,7 +9,7 @@ a methods from multiple modules and objects. Only one import required.
 There are several existing modules designed to improve Python's datetime functionality.
 Here are some reasons why Instant is different:
 
- - Uses native datetime.datetime objects for compatibility and speed
+ - Uses native datetime.datetime and datetime.timedelta types for compatibility and speed
  - Only one import required
  - Clean, intuitive syntax and function names
  - Operates exclusively with top-level functions; no sorting through methods
@@ -30,6 +30,7 @@ Included functions
  - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
  - move_tz: Change a time from one timezone to another.
+ - timedelta: Same as datetime.timedelta; you don't have to import datetime.
 
 
 Basic documentation
@@ -63,6 +64,15 @@ Find the current datetime, in UTC:
     instant.now()
     # datetime.datetime(2016, 4, 29, 20, 36, 53, 257753, tzinfo=<UTC>)
 
+
+Move from one timezone to another:
+
+.. code-block:: python
+
+    dt = instant.datetime(2016,1,1, tz='Asia/Gaza')
+    # datetime.datetime(2016, 1, 1, 0, 0, tzinfo=<DstTzInfo 'Asia/Gaza' EET+2:00:00 STD>)
+    instant.move_tz(dt, 'Europe/Vatican')
+    # datetime.datetime(2015, 12, 31, 23, 0, tzinfo=<DstTzInfo 'Europe/Vatican' CET+1:00:00 STD>
 
 Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day'
 'hour', 'minute', 'second', 'millisecond', and 'microsecond':
@@ -101,7 +111,7 @@ Convert a string to a datetime. Uses format from Arrow:
 
 .. code-block:: python
 
-    instant.to_str('2016-04-29 03:30', 'YYYY-MM-DD hh:mm')
+    instant.from_str('2016-04-29 03:30', 'YYYY-MM-DD hh:mm')
     # datetime.datetime(2016, 4, 29, 3, 30, tzinfo=<UTC>)
 
 
@@ -111,3 +121,13 @@ Convert a datetime a an ISO-8601-format string:
 
         instant.to_iso(instant.now())
         # '2016-04-29T20:12:05.807558+00:00'
+
+
+Some syntax we're dodging:
+----------------------------------
+
+
+.. code-block:: python
+
+        pytz.timezone('US/Eastern').localize(datetime.datetime.utcnow())
+        arrow.Arrow(1999, 9, 9, hour=9, minute=30, tzinfo=dateutil.tz.gettz('US/Eastern'))

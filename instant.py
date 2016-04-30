@@ -48,16 +48,6 @@ def _expand(dt: _datetime.datetime):
         dt.microsecond, dt.tzinfo
 
 
-def to_iso(dt: _datetime.datetime) -> str:
-    """Return a standard ISO 8601 datetime string.  Similar to datetime's
-    .isoformat()"""
-    # todo placeholder, not quite right.
-    # return "{}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}:{:02d}+{}".format(*_expand(dt))
-    if not dt.tzinfo:
-        raise TzNaiveError
-    return dt.isoformat()
-
-
 def to_str(dt: _datetime.datetime, format: str) -> str:
     """Format a datetime or Instant as a string."""
     if not dt.tzinfo:
@@ -81,11 +71,27 @@ def from_str(dt_str: str, format: str) -> _datetime.datetime:
     return dt
 
 
+def to_iso(dt: _datetime.datetime) -> str:
+    """Return a standard ISO 8601 datetime string.  Similar to datetime's
+    .isoformat()"""
+    # todo placeholder, not quite right.
+    # return "{}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}:{:02d}+{}".format(*_expand(dt))
+    if not dt.tzinfo:
+        raise TzNaiveError
+    return dt.isoformat()
+
+
+def from_iso(iso_str: str) -> _datetime.datetime:
+    """Convert an ISO 8601 string to a datetime."""
+    pass
+
+
+
 def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
     """Change a datetime from one timezone to another."""
     # Datetime provides a ValueError if you use this function on a naive DT, so
     # no need to explicitly raise an error here.
-    return dt.astimezone(pytz.timezone(str))
+    return dt.astimezone(pytz.timezone(tz))
 
 
 def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int) -> int:
@@ -95,9 +101,10 @@ def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int)
 
 def range_dt(start, end, step=1, interval='day') -> Iterator[_datetime.datetime]:
     """Iterate over Instants or datetimes."""
-    # todo deocorator to check for tz-naive?
-    if not start.tzinfo or not end.tzinfo:
-        raise TzNaiveError
+    # todo deal with dates more elegantly; here they get a pass.
+    if not isinstance(start, _datetime.date) and isinstance(end, _datetime.date):
+        if not start.tzinfo or not end.tzinfo:
+            raise TzNaiveError
 
     intervals = partial(_count_timedelta, (end - start), step)
 
