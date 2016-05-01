@@ -5,23 +5,27 @@ from typing import TypeVar, Iterator
 
 import pytz
 
-# todo maybe make the funcs work on normal dt objects??
+from . import from_arrow
 
-# No need to import datetime if using instant.
+
+# No need to import datetime if using saturn.
 timedelta = _datetime.timedelta
+
+DateOrDateTime = TypeVar('DateDateTime', _datetime.date, _datetime.datetime)
+
 
 class TzNaiveError(Exception):
     pass
 
+# todo reorder func arguments to be curry-friendly?
 
-# def datetime(*args, **kwargs):
-def datetime(year: int, month: int, day: int, hour:int=0, minute:int=0,
-        second:int=0, microsecond:int=0, tzinfo=None, tz=None):
+
+def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
+             second: int=0, microsecond: int=0, tzinfo=None, tz=None):
     """Create a datetime instance, with default tzawareness at UTC."""
 
-    dt = _datetime.datetime(year, month, day, hour, minute, second, microsecond,
-        tzinfo)
-    # dt = _datetime.datetime(*args, **kwargs)
+    dt = _datetime.datetime(year, month, day, hour, minute, second,
+                            microsecond, tzinfo)
 
     if tz:  # A string timezone is provided
         return fix_naive(dt, tz)
@@ -43,29 +47,24 @@ def fix_naive(dt: _datetime.datetime, tz: str='UTC') -> _datetime.datetime:
 
 
 def _expand(dt: _datetime.datetime):
-    """Expand arguments from a datetime object or instant."""
+    """Expand arguments from a datetime object."""
     return dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, \
         dt.microsecond, dt.tzinfo
 
 
-def to_str(dt: _datetime.datetime, format: str) -> str:
-    """Format a datetime or Instant as a string."""
-    if not dt.tzinfo:
-        raise TzNaiveError
+def to_str(dt: DateOrDateTime, str_format: str) -> str:
+    """Format a datetime or date as a string."""
+    if not isinstance(dt, _datetime.date):
+        if not dt.tzinfo:
+            raise TzNaiveError
 
-    # todo placeholder
-    return dt.strftime(format)
-
-    x = 1
-    format_re = re.compile('(YYY?Y?|MM?M?M?|Do|DD?D?D?|d?dd?d?|HH?|hh?|mm?|ss?|SS?S?S?S?S?|ZZ?|a|A|X)')
-
-    pattern = re.compile('(YYYY)*|(YYYY)*|(MM)*|(DD)*')
+    return from_arrow.format(dt, str_format)
 
 
-def from_str(dt_str: str, format: str) -> _datetime.datetime:
+def from_str(dt_str: str, str_format: str) -> _datetime.datetime:
     """Format a string to datetime.  Similar to datetime.strptime."""
     # todo placeholder
-    dt = _datetime.datetime.strptime(dt_str, format)
+    dt = _datetime.datetime.strptime(dt_str, str_format)
     if not dt.tzinfo:
         dt = dt.replace(tzinfo=pytz.utc)
     return dt
@@ -86,7 +85,6 @@ def from_iso(iso_str: str) -> _datetime.datetime:
     pass
 
 
-
 def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
     """Change a datetime from one timezone to another."""
     # Datetime provides a ValueError if you use this function on a naive DT, so
@@ -99,10 +97,11 @@ def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int)
     return int(delta.total_seconds() / (seconds_in_interval * step))
 
 
-def range_dt(start, end, step=1, interval='day') -> Iterator[_datetime.datetime]:
+def range_dt(start: DateOrDateTime, end: DateOrDateTime, step: int=1,
+             interval: str='day') -> Iterator[_datetime.datetime]:
     """Iterate over Instants or datetimes."""
     # todo deal with dates more elegantly; here they get a pass.
-    if not isinstance(start, _datetime.date) and isinstance(end, _datetime.date):
+    if not isinstance(start, _datetime.date) and not isinstance(end, _datetime.date):
         if not start.tzinfo or not end.tzinfo:
             raise TzNaiveError
 
@@ -139,3 +138,4 @@ def range_dt(start, end, step=1, interval='day') -> Iterator[_datetime.datetime]
     else:
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \
             'microsecond' or 'millisecond '")
+
