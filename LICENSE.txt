@@ -1,4 +1,4 @@
-Copyright 2015 David O'Connor
+Copyright 2016 David O'Connor
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,5 +13,6 @@ Copyright 2015 David O'Connor
    limitations under the License.
 
 
+Saturn uses code from Arrow to parse strings, and imports Pytz for timezones.
+Arrow is licensed under Apache 2.0. Pytz is licensed under MIT.
 
-Numba is Copyright (c) 2012, Continuum Analytics, Inc.

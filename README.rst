@@ -1,6 +1,5 @@
-Saturn: Functions for better datetimes
-======================================
-
+Saturn: Functions to fix datetimes, with clean syntax
+=====================================================
 
 Perform common operations on datetimes with clean syntax, acting as a thin wrapper
 for datetime and pytz. Force timezone-aware
@@ -8,11 +7,11 @@ datetimes. All operations are top-level functions: No dealing with
 a methods from multiple modules and objects.
 
 There are several existing modules designed to improve Python's datetime functionality.
-Here are some reasons why Saturn is different:
+Here's why Saturn is different:
 
  - Uses native datetime.datetime and datetime.timedelta types for compatibility and speed
  - Only one import required
- - Clean, intuitive syntax and function names
+ - Clean, intuitive syntax and function names.  No boilerplate.
  - Operates exclusively with top-level functions; no sorting through methods
    from multiple objects and modules
 
@@ -20,7 +19,7 @@ Saturn uses Pytz for timezones:
 `Pytz website <https://pypi.python.org/pypi/pytz/>`_
 Pytz is licensed under the MIT license.
 
-... and Arrow for string formatting:
+... and Arrow for string formatting and parsing:
 `Arrow website: <http://arrow.readthedocs.io/en/latest/>`_
 Arrow is licensed under Apache 2.
 
@@ -30,9 +29,11 @@ Included functions
 ------------------
 
  - datetime: Return a timezone-aware datetime.datetime object.  Created the same way as datetime.datetime,
-   with an optional 'tz' argument for a timezone string.
- - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, and as a function.
- - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, and as a function.
+   with an optional 'tz' argument for a timezone string. Defaults to UTC.
+ - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, from Arrow.
+ - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
+ - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
+ - from_iso: Create a datetime from an isoformat string. (Not yet implemented)
  - now: Find current utc time; timezone-aware
  - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range. Lazy.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
@@ -114,7 +115,7 @@ Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day'
     # 2016-01-05 08:30:00+00:00
 
 
-Convert a datetime a string. Uses format from moment.js:
+Convert a datetime a string. Uses format from Arrow:
 
 .. code-block:: python
 
@@ -122,7 +123,7 @@ Convert a datetime a string. Uses format from moment.js:
     # '2016-04-29 03:30'
 
 
-Convert a string to a datetime. Uses format from moment.js:
+Convert a string to a datetime. Uses format from Arrow:
 
 .. code-block:: python
 
@@ -130,12 +131,22 @@ Convert a string to a datetime. Uses format from moment.js:
     # datetime.datetime(2016, 4, 29, 3, 30, tzinfo=<UTC>)
 
 
-Convert a datetime a an ISO-8601-format string:
+Convert a datetime a an ISO-8601 string:
 
 .. code-block:: python
 
         saturn.to_iso(saturn.now())
         # '2016-04-29T20:12:05.807558+00:00'
+
+Convert an ISO-8601 string to a datetime.
+
+.. code-block:: python
+
+        saturn.from_iso('2016-04-29T20:12:05.000000+00:00')
+        datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
+
+
+For details on to_str and from_str syntax, please reference `Arrow's formatting reference <http://arrow.readthedocs.io/en/latest/#tokens>`_
 
 
 Some syntax we're dodging:

@@ -1,6 +1,5 @@
 import datetime as _datetime
-from functools import partial
-import re
+from functools import partial, wraps
 from typing import TypeVar, Iterator
 
 import pytz
@@ -18,6 +17,27 @@ class TzNaiveError(Exception):
     pass
 
 # todo reorder func arguments to be curry-friendly?
+
+
+def _check_aware(func, num_dt_args=1):
+    """Force a function that accepts a datetime as first argument to check for
+    timezone-awareness.  Raise an error if the daatetime's naive."""
+    @wraps(func)
+    def inner(*args):
+        dts = args[:num_dt_args]
+        # Can't use isinstance, since isinstance([datetime object], _datetime.date)
+        # returns True.
+        for dt in dts:
+            if type(dt) != _datetime.date:
+                if not dt.tzinfo:
+                    raise TzNaiveError("Must use a timezone-aware datetime. Consider saturn.fix_naive().")
+
+        return func(*args)
+    return inner
+
+
+def _check_aware2(func):
+    return _check_aware(func, num_dt_args=2)
 
 
 def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
@@ -52,37 +72,36 @@ def _expand(dt: _datetime.datetime):
         dt.microsecond, dt.tzinfo
 
 
+@_check_aware
 def to_str(dt: DateOrDateTime, str_format: str) -> str:
     """Format a datetime or date as a string."""
-    if not isinstance(dt, _datetime.date):
-        if not dt.tzinfo:
-            raise TzNaiveError
-
-    return from_arrow.format(dt, str_format)
+    return from_arrow.format_(dt, str_format)
 
 
 def from_str(dt_str: str, str_format: str) -> _datetime.datetime:
     """Format a string to datetime.  Similar to datetime.strptime."""
     # todo placeholder
-    dt = _datetime.datetime.strptime(dt_str, str_format)
+    dt = from_arrow.parse(dt_str, str_format)
+
     if not dt.tzinfo:
         dt = dt.replace(tzinfo=pytz.utc)
     return dt
 
 
-def to_iso(dt: _datetime.datetime) -> str:
+@_check_aware
+def to_iso(dt: DateOrDateTime) -> str:
     """Return a standard ISO 8601 datetime string.  Similar to datetime's
     .isoformat()"""
-    # todo placeholder, not quite right.
-    # return "{}-{:02d}-{:02d}T{:02d}:{:02d}:{:02d}:{:02d}+{}".format(*_expand(dt))
-    if not dt.tzinfo:
-        raise TzNaiveError
     return dt.isoformat()
 
 
 def from_iso(iso_str: str) -> _datetime.datetime:
     """Convert an ISO 8601 string to a datetime."""
-    pass
+    dt = from_arrow.parse_iso(iso_str)
+
+    if not dt.tzinfo:
+        dt = dt.replace(tzinfo=pytz.utc)
+    return dt
 
 
 def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
@@ -97,14 +116,10 @@ def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int)
     return int(delta.total_seconds() / (seconds_in_interval * step))
 
 
+@_check_aware2
 def range_dt(start: DateOrDateTime, end: DateOrDateTime, step: int=1,
              interval: str='day') -> Iterator[_datetime.datetime]:
-    """Iterate over Instants or datetimes."""
-    # todo deal with dates more elegantly; here they get a pass.
-    if not isinstance(start, _datetime.date) and not isinstance(end, _datetime.date):
-        if not start.tzinfo or not end.tzinfo:
-            raise TzNaiveError
-
+    """Iterate over datetimes or dates, similar to builtin range.."""
     intervals = partial(_count_timedelta, (end - start), step)
 
     if interval == 'week':
@@ -132,10 +147,10 @@ def range_dt(start: DateOrDateTime, end: DateOrDateTime, step: int=1,
             yield start + _datetime.timedelta(milliseconds=i) * step
 
     elif interval == 'microsecond':
-        for i in range(intervals(1 / 10e6)):
+        for i in range(intervals(1e-6)):
             yield start + _datetime.timedelta(microseconds=i) * step
 
     else:
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \
-            'microsecond' or 'millisecond '")
+            'microsecond' or 'millisecond'.")
 

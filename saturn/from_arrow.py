@@ -5,23 +5,72 @@
 # Arrow in Github: https://github.com/crsmithdev/arrow
 
 import calendar
+from datetime import datetime  # not consistent with saturn.py
 import re
 
 import pytz
 
+# Used for formatter and parser
+FORMAT_RE = re.compile('(YYY?Y?|MM?M?M?|Do|DD?D?D?|d?dd?d?|HH?|hh?|mm?|ss?|SS?S?S?S?S?|ZZ?|a|A|X)')
 
-def format(dt, str_format):
+# Used by parser only.
+ESCAPE_RE = re.compile('\[[^\[\]]*\]')
+ONE_THROUGH_SIX_DIGIT_RE = re.compile('\d{1,6}')
+ONE_THROUGH_FIVE_DIGIT_RE = re.compile('\d{1,5}')
+ONE_THROUGH_FOUR_DIGIT_RE = re.compile('\d{1,4}')
+ONE_TWO_OR_THREE_DIGIT_RE = re.compile('\d{1,3}')
+ONE_OR_TWO_DIGIT_RE = re.compile('\d{1,2}')
+FOUR_DIGIT_RE = re.compile('\d{4}')
+TWO_DIGIT_RE = re.compile('\d{2}')
+TZ_RE = re.compile('[+\-]?\d{2}:?(\d{2})?')
+TZ_NAME_RE = re.compile('\w[\w+\-/]+')
+
+TZINFO_RE = re.compile('([+\-])?(\d\d):?(\d\d)?')
+
+
+BASE_INPUT_RE_MAP = {
+    'YYYY': FOUR_DIGIT_RE,
+    'YY': TWO_DIGIT_RE,
+    'MM': TWO_DIGIT_RE,
+    'M': ONE_OR_TWO_DIGIT_RE,
+    'DD': TWO_DIGIT_RE,
+    'D': ONE_OR_TWO_DIGIT_RE,
+    'HH': TWO_DIGIT_RE,
+    'H': ONE_OR_TWO_DIGIT_RE,
+    'hh': TWO_DIGIT_RE,
+    'h': ONE_OR_TWO_DIGIT_RE,
+    'mm': TWO_DIGIT_RE,
+    'm': ONE_OR_TWO_DIGIT_RE,
+    'ss': TWO_DIGIT_RE,
+    's': ONE_OR_TWO_DIGIT_RE,
+    'X': re.compile('\d+'),
+    'ZZZ': TZ_NAME_RE,
+    'ZZ': TZ_RE,
+    'Z': TZ_RE,
+    'SSSSSS': ONE_THROUGH_SIX_DIGIT_RE,
+    'SSSSS': ONE_THROUGH_FIVE_DIGIT_RE,
+    'SSSS': ONE_THROUGH_FOUR_DIGIT_RE,
+    'SSS': ONE_TWO_OR_THREE_DIGIT_RE,
+    'SS': ONE_OR_TWO_DIGIT_RE,
+    'S': re.compile('\d'),
+}
+
+MARKERS = ['YYYY', 'MM', 'DD']
+SEPARATORS = ['-', '/', '.']
+
+
+class ParserError(RuntimeError):
+    pass
+
+
+def format_(dt, str_format):
     locale = EnglishLocale()
-    _FORMAT_RE = re.compile(
-        '(YYY?Y?|MM?M?M?|Do|DD?D?D?|d?dd?d?|HH?|hh?|mm?|ss?|SS?S?S?S?S?|ZZ?|a|A|X)')
-
-    return _FORMAT_RE.sub(lambda m: format_token(dt, m.group(0), locale),
-                          str_format)
+    return FORMAT_RE.sub(lambda m: format_token(dt, m.group(0), locale),
+                         str_format)
 
 
-class Locale(object):
+class Locale:
     """Represents locale-specific data and functionality."""
-
     names = []
 
     timeframes = {
@@ -126,9 +175,9 @@ class Locale(object):
         return '{0:04d}'.format(year)[2:]
 
     def meridian(self, hour, token):
-        """ Returns the meridian indicator for a specified hour and format token.
+        """ Returns the meridian indicator for a specified hour and format_ token.
         :param hour: the ``int`` hour of the day.
-        :param token: the format token.
+        :param token: the format_ token.
         """
 
         if token == 'a':
@@ -137,7 +186,7 @@ class Locale(object):
             return self.meridians['AM'] if hour < 12 else self.meridians['PM']
 
     def ordinal_number(self, n):
-        """ Returns the ordinal format of a given integer
+        """ Returns the ordinal format_ of a given integer
         :param n: an integer
         """
         return self._ordinal_number(n)
@@ -162,10 +211,7 @@ class Locale(object):
         return direction.format(humanized)
 
 
-
-
-class EnglishLocale(Locale):
-
+class EnglishLocale:
     names = ['en', 'en_us', 'en_gb', 'en_au', 'en_be', 'en_jp', 'en_za', 'en_ca']
 
     past = '{0} ago'
@@ -194,16 +240,17 @@ class EnglishLocale(Locale):
     }
 
     month_names = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July',
-        'August', 'September', 'October', 'November', 'December']
+                   'August', 'September', 'October', 'November', 'December']
     month_abbreviations = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug',
-        'Sep', 'Oct', 'Nov', 'Dec']
+                           'Sep', 'Oct', 'Nov', 'Dec']
 
     day_names = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
     day_abbreviations = ['', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
     ordinal_day_re = r'((?P<value>[2-3]?1(?=st)|[2-3]?2(?=nd)|[2-3]?3(?=rd)|[1-3]?[04-9](?=th)|1[1-3](?=th))(st|nd|rd|th))'
 
-    def _ordinal_number(self, n):
+    @staticmethod
+    def _ordinal_number(n):
         if n % 100 not in (11, 12, 13):
             remainder = abs(n) % 10
             if remainder == 1:
@@ -240,7 +287,7 @@ def format_token(dt, token, locale):
         return str(dt.day)
 
     if token == 'Do':
-        return locale.ordinal_number(dt.day)
+        return locale._ordinal_number(dt.day)
 
     if token == 'dddd':
         return locale.day_name(dt.isoweekday())
@@ -297,3 +344,252 @@ def format_token(dt, token, locale):
 
     if token in ('a', 'A'):
         return locale.meridian(dt.hour, token)
+
+
+def choice_re(choices, flags=0):
+    """Helper function for parse."""
+    return re.compile('({0})'.format('|'.join(choices)), flags=flags)
+
+
+def parse_iso(iso_str):
+    has_time = 'T' in iso_str or ' ' in iso_str.strip()
+    space_divider = ' ' in iso_str.strip()
+
+    if has_time:
+        if space_divider:
+            date_string, time_string = iso_str.split(' ', 1)
+        else:
+            date_string, time_string = iso_str.split('T', 1)
+        time_parts = re.split('[+-]', time_string, 1)
+        has_tz = len(time_parts) > 1
+        has_seconds = time_parts[0].count(':') > 1
+        has_subseconds = '.' in time_parts[0]
+
+        if has_subseconds:
+            subseconds_token = 'S' * min(len(re.split('\D+', time_parts[0].split('.')[1], 1)[0]), 6)
+            formats = ['YYYY-MM-DDTHH:mm:ss.%s' % subseconds_token]
+        elif has_seconds:
+            formats = ['YYYY-MM-DDTHH:mm:ss']
+        else:
+            formats = ['YYYY-MM-DDTHH:mm']
+    else:
+        has_tz = False
+        # generate required formats: YYYY-MM-DD, YYYY-MM-DD, YYYY
+        # using various separators: -, /, .
+        l = len(MARKERS)
+        formats = [separator.join(MARKERS[:l-i])
+                   for i in range(l)
+                   for separator in SEPARATORS]
+
+    if has_time and has_tz:
+        formats = [f + 'Z' for f in formats]
+
+    if space_divider:
+        formats = [item.replace('T', ' ', 1) for item in formats]
+
+    return parse_multiformat(iso_str, formats)
+
+
+def parse(string, fmt):
+    if isinstance(fmt, list):
+        return parse_multiformat(string, fmt)
+
+    locale = EnglishLocale()
+
+    # fmt is a string of tokens like 'YYYY-MM-DD'
+    # we construct a new string by replacing each
+    # token by its pattern:
+    # 'YYYY-MM-DD' -> '(?P<YYYY>\d{4})-(?P<MM>\d{2})-(?P<DD>\d{2})'
+    tokens = []
+    offset = 0
+
+    input_re_map = BASE_INPUT_RE_MAP.copy()
+    input_re_map.update({
+        'MMMM': choice_re(locale.month_names[1:], re.IGNORECASE),
+        'MMM': choice_re(locale.month_abbreviations[1:],
+                         re.IGNORECASE),
+        'Do': re.compile(locale.ordinal_day_re),
+        'dddd': choice_re(locale.day_names[1:], re.IGNORECASE),
+        'ddd': choice_re(locale.day_abbreviations[1:],
+                         re.IGNORECASE),
+        'd': re.compile("[1-7]"),
+        'a': choice_re(
+            (locale.meridians['am'], locale.meridians['pm'])
+        ),
+        # note: 'A' token accepts both 'am/pm' and 'AM/PM' formats to
+        # ensure backwards compatibility of this token
+        'A': choice_re(locale.meridians.values())
+    })
+
+    # Extract the bracketed expressions to be reinserted later.
+    escaped_fmt = re.sub(ESCAPE_RE, "#" , fmt)
+    escaped_data = re.findall(ESCAPE_RE, fmt)
+
+    fmt_pattern = escaped_fmt
+
+    for m in FORMAT_RE.finditer(escaped_fmt):
+        token = m.group(0)
+        try:
+            input_re = input_re_map[token]
+        except KeyError:
+            raise ParserError('Unrecognized token \'{0}\''.format(token))
+        input_pattern = '(?P<{0}>{1})'.format(token, input_re.pattern)
+        tokens.append(token)
+        # a pattern doesn't have the same length as the token
+        # it replaces! We keep the difference in the offset variable.
+        # This works because the string is scanned left-to-right and matches
+        # are returned in the order found by finditer.
+        fmt_pattern = fmt_pattern[:m.start() + offset] + input_pattern + fmt_pattern[m.end() + offset:]
+        offset += len(input_pattern) - (m.end() - m.start())
+
+    final_fmt_pattern = ""
+    a = fmt_pattern.split("#")
+    b = escaped_data
+
+    # Due to the way Python splits, 'a' will always be longer
+    for i in range(len(a)):
+        final_fmt_pattern += a[i]
+        if i < len(b):
+            final_fmt_pattern += b[i][1:-1]
+
+    match = re.search(final_fmt_pattern, string, flags=re.IGNORECASE)
+    if match is None:
+        raise ParserError('Failed to match \'{0}\' when parsing \'{1}\''.format(final_fmt_pattern, string))
+    parts = {}
+    for token in tokens:
+        if token == 'Do':
+            value = match.group('value')
+        else:
+            value = match.group(token)
+        parse_token(token, value, parts, locale)
+    return build_datetime(parts)
+
+
+def parse_token(token, value, parts, locale):
+    if token == 'YYYY':
+        parts['year'] = int(value)
+    elif token == 'YY':
+        value = int(value)
+        parts['year'] = 1900 + value if value > 68 else 2000 + value
+
+    elif token in ['MMMM', 'MMM']:
+        parts['month'] = locale.month_number(value.lower())
+
+    elif token in ['MM', 'M']:
+        parts['month'] = int(value)
+
+    elif token in ['DD', 'D']:
+        parts['day'] = int(value)
+
+    elif token in ['Do']:
+        parts['day'] = int(value)
+
+    elif token.upper() in ['HH', 'H']:
+        parts['hour'] = int(value)
+
+    elif token in ['mm', 'm']:
+        parts['minute'] = int(value)
+
+    elif token in ['ss', 's']:
+        parts['second'] = int(value)
+
+    elif token == 'SSSSSS':
+        parts['microsecond'] = int(value)
+    elif token == 'SSSSS':
+        parts['microsecond'] = int(value) * 10
+    elif token == 'SSSS':
+        parts['microsecond'] = int(value) * 100
+    elif token == 'SSS':
+        parts['microsecond'] = int(value) * 1000
+    elif token == 'SS':
+        parts['microsecond'] = int(value) * 10000
+    elif token == 'S':
+        parts['microsecond'] = int(value) * 100000
+
+    elif token == 'X':
+        parts['timestamp'] = int(value)
+
+    elif token in ['ZZZ', 'ZZ', 'Z']:
+        parts['tzinfo'] = parse_tzinfo(value)
+
+    elif token in ['a', 'A']:
+        if value in (
+                locale.meridians['am'],
+                locale.meridians['AM']
+        ):
+            parts['am_pm'] = 'am'
+        elif value in (
+                locale.meridians['pm'],
+                locale.meridians['PM']
+        ):
+            parts['am_pm'] = 'pm'
+
+
+def build_datetime(parts):
+    timestamp = parts.get('timestamp')
+
+    if timestamp:
+        return datetime.fromtimestamp(timestamp, tz=pytz.utc)
+
+    am_pm = parts.get('am_pm')
+    hour = parts.get('hour', 0)
+
+    if am_pm == 'pm' and hour < 12:
+        hour += 12
+    elif am_pm == 'am' and hour == 12:
+        hour = 0
+
+    return datetime(year=parts.get('year', 1), month=parts.get('month', 1),
+                    day=parts.get('day', 1), hour=hour, minute=parts.get('minute', 0),
+                    second=parts.get('second', 0), microsecond=parts.get('microsecond', 0),
+                    tzinfo=parts.get('tzinfo'))
+
+
+def parse_multiformat(string, formats):
+    _datetime = None
+
+    for fmt in formats:
+        try:
+            _datetime = parse(string, fmt)
+            break
+        except:
+            pass
+
+    if _datetime is None:
+        raise ParserError('Could not match input to any of {0} on \'{1}\''.format(formats, string))
+
+    return _datetime
+
+
+def map_lookup(input_map, key):
+    try:
+        return input_map[key]
+    except KeyError:
+        raise ParserError('Could not match "{0}" to {1}'.format(key, input_map))
+
+
+def parse_tzinfo(string):
+    if string in ['utc', 'UTC']:
+        tzinfo = pytz.utc
+
+    else:
+        iso_match = TZINFO_RE.match(string)
+
+        if iso_match:
+            sign, hours, minutes = iso_match.groups()
+            if minutes is None:
+                minutes = 0
+            seconds = int(hours) * 3600 + int(minutes) * 60
+
+            if sign == '-':
+                seconds *= -1
+
+            tzinfo = tz.tzoffset(None, seconds)
+
+        else:
+            tzinfo = pytz.timezone(string)
+
+    if tzinfo is None:
+        raise ParserError('Could not parse timezone expression "{0}"', string)
+
+    return tzinfo
