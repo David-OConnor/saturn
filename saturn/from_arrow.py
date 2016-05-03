@@ -1,16 +1,14 @@
-# This module includes code taken from crsmith's Arrow package, for string formatting.
+# This module is modified code from crsmith's Arrow package, for string formatting.
 # Arrow is © Copyright 2013, Chris Smith, licensed under Apache 2.
 # Arrow on pypi: https://pypi.python.org/pypi/arrow
 # Arrow homepage and documentation: http://arrow.readthedocs.io/en/latest/
 # Arrow in Github: https://github.com/crsmithdev/arrow
 
 import calendar
-import datetime  # not consistent with saturn.py
+import datetime
 import re
 
 import pytz
-
-# Used for formatter and parser
 
 
 RES = {
@@ -212,7 +210,7 @@ class Locale:
         return direction.format(humanized)
 
 
-class EnglishLocale:
+class EnglishLocale(Locale):
     names = ['en', 'en_us', 'en_gb', 'en_au', 'en_be', 'en_jp', 'en_za', 'en_ca']
 
     past = '{0} ago'
@@ -541,9 +539,9 @@ def build_datetime(parts):
         hour = 0
 
     return datetime.datetime(year=parts.get('year', 1), month=parts.get('month', 1),
-                    day=parts.get('day', 1), hour=hour, minute=parts.get('minute', 0),
-                    second=parts.get('second', 0), microsecond=parts.get('microsecond', 0),
-                    tzinfo=parts.get('tzinfo'))
+                             day=parts.get('day', 1), hour=hour, minute=parts.get('minute', 0),
+                             second=parts.get('second', 0), microsecond=parts.get('microsecond', 0),
+                             tzinfo=parts.get('tzinfo'))
 
 
 def parse_multiformat(string, formats):
@@ -560,13 +558,6 @@ def parse_multiformat(string, formats):
         raise ParserError('Could not match input to any of {0} on \'{1}\''.format(formats, string))
 
     return _datetime
-
-
-def map_lookup(input_map, key):
-    try:
-        return input_map[key]
-    except KeyError:
-        raise ParserError('Could not match "{0}" to {1}'.format(key, input_map))
 
 
 def parse_tzinfo(string):

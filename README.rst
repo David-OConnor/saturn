@@ -1,7 +1,7 @@
-Saturn: Functions to fix datetimes, with clean syntax
-=====================================================
+Saturn: Functions for tz-aware datetimes with clean syntax
+==========================================================
 
-Perform common operations on datetimes with clean syntax, acting as a thin wrapper
+Performs common operations on datetimes with clean syntax, acting as a thin wrapper
 for datetime and pytz. Force timezone-aware
 datetimes. All operations are top-level functions: No dealing with
 a methods from multiple modules and objects.
@@ -15,15 +15,15 @@ Here's why Saturn is different:
  - Operates exclusively with top-level functions; no sorting through methods
    from multiple objects and modules
 
-Saturn uses Pytz for timezones:
+Saturn uses Pytz for timezones. Used as a dependency.:
 `Pytz website <https://pypi.python.org/pypi/pytz/>`_
 Pytz is licensed under the MIT license.
 
-... and Arrow for string formatting and parsing:
+... and uses code from Arrow for string formatting and parsing. Not a dependency.:
 `Arrow website: <http://arrow.readthedocs.io/en/latest/>`_
 Arrow is licensed under Apache 2.
 
-Python 2 is currently unsupported.
+Python 2 is unsupported.
 
 Included functions
 ------------------
@@ -33,8 +33,8 @@ Included functions
  - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, from Arrow.
  - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
  - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
- - from_iso: Create a datetime from an isoformat string. (Not yet implemented)
- - now: Find current utc time; timezone-aware
+ - from_iso: Create a datetime from an isoformat string.
+ - now: Find current utc time; timezone-aware.
  - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range. Lazy.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
  - move_tz: Change a datetime from one timezone to another.
@@ -143,7 +143,7 @@ Convert an ISO-8601 string to a datetime.
 .. code-block:: python
 
         saturn.from_iso('2016-04-29T20:12:05.000000+00:00')
-        datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
+        # datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
 
 
 For details on to_str and from_str syntax, please reference `Arrow's formatting reference <http://arrow.readthedocs.io/en/latest/#tokens>`_
