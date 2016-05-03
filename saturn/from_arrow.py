@@ -5,53 +5,54 @@
 # Arrow in Github: https://github.com/crsmithdev/arrow
 
 import calendar
-from datetime import datetime  # not consistent with saturn.py
+import datetime  # not consistent with saturn.py
 import re
 
 import pytz
 
 # Used for formatter and parser
-FORMAT_RE = re.compile('(YYY?Y?|MM?M?M?|Do|DD?D?D?|d?dd?d?|HH?|hh?|mm?|ss?|SS?S?S?S?S?|ZZ?|a|A|X)')
 
-# Used by parser only.
-ESCAPE_RE = re.compile('\[[^\[\]]*\]')
-ONE_THROUGH_SIX_DIGIT_RE = re.compile('\d{1,6}')
-ONE_THROUGH_FIVE_DIGIT_RE = re.compile('\d{1,5}')
-ONE_THROUGH_FOUR_DIGIT_RE = re.compile('\d{1,4}')
-ONE_TWO_OR_THREE_DIGIT_RE = re.compile('\d{1,3}')
-ONE_OR_TWO_DIGIT_RE = re.compile('\d{1,2}')
-FOUR_DIGIT_RE = re.compile('\d{4}')
-TWO_DIGIT_RE = re.compile('\d{2}')
-TZ_RE = re.compile('[+\-]?\d{2}:?(\d{2})?')
-TZ_NAME_RE = re.compile('\w[\w+\-/]+')
 
-TZINFO_RE = re.compile('([+\-])?(\d\d):?(\d\d)?')
+RES = {
+    'format': re.compile('(YYY?Y?|MM?M?M?|Do|DD?D?D?|d?dd?d?|HH?|hh?|mm?|ss?|SS?S?S?S?S?|ZZ?|a|A|X)'),
+    'escape': re.compile('\[[^\[\]]*\]'),
+    'one_through_six': re.compile('\d{1,6}'),
+    'one_through_five': re.compile('\d{1,5}'),
+    'one_through_four': re.compile('\d{1,4}'),
+    'one_two_or_three': re.compile('\d{1,3}'),
+    'one_or_two': re.compile('\d{1,2}'),
+    'four_digit': re.compile('\d{4}'),
+    'two_digit': re.compile('\d{2}'),
+    'tz': re.compile('[+\-]?\d{2}:?(\d{2})?'),
+    'tz_name': re.compile('\w[\w+\-/]+'),
+    'tzinfo': re.compile('([+\-])?(\d\d):?(\d\d)?'),
+}
 
 
 BASE_INPUT_RE_MAP = {
-    'YYYY': FOUR_DIGIT_RE,
-    'YY': TWO_DIGIT_RE,
-    'MM': TWO_DIGIT_RE,
-    'M': ONE_OR_TWO_DIGIT_RE,
-    'DD': TWO_DIGIT_RE,
-    'D': ONE_OR_TWO_DIGIT_RE,
-    'HH': TWO_DIGIT_RE,
-    'H': ONE_OR_TWO_DIGIT_RE,
-    'hh': TWO_DIGIT_RE,
-    'h': ONE_OR_TWO_DIGIT_RE,
-    'mm': TWO_DIGIT_RE,
-    'm': ONE_OR_TWO_DIGIT_RE,
-    'ss': TWO_DIGIT_RE,
-    's': ONE_OR_TWO_DIGIT_RE,
+    'YYYY': RES['four_digit'],
+    'YY': RES['two_digit'],
+    'MM': RES['two_digit'],
+    'M': RES['one_or_two'],
+    'DD': RES['two_digit'],
+    'D': RES['one_or_two'],
+    'HH': RES['two_digit'],
+    'H': RES['one_or_two'],
+    'hh': RES['two_digit'],
+    'h': RES['one_or_two'],
+    'mm': RES['two_digit'],
+    'm': RES['one_or_two'],
+    'ss': RES['two_digit'],
+    's': RES['one_or_two'],
     'X': re.compile('\d+'),
-    'ZZZ': TZ_NAME_RE,
-    'ZZ': TZ_RE,
-    'Z': TZ_RE,
-    'SSSSSS': ONE_THROUGH_SIX_DIGIT_RE,
-    'SSSSS': ONE_THROUGH_FIVE_DIGIT_RE,
-    'SSSS': ONE_THROUGH_FOUR_DIGIT_RE,
-    'SSS': ONE_TWO_OR_THREE_DIGIT_RE,
-    'SS': ONE_OR_TWO_DIGIT_RE,
+    'ZZZ': RES['tz_name'],
+    'ZZ': RES['tz'],
+    'Z': RES['tz'],
+    'SSSSSS': RES['one_through_six'],
+    'SSSSS': RES['one_through_five'],
+    'SSSS': RES['one_through_four'],
+    'SSS': RES['one_two_or_three'],
+    'SS': RES['one_or_two'],
     'S': re.compile('\d'),
 }
 
@@ -65,8 +66,8 @@ class ParserError(RuntimeError):
 
 def format_(dt, str_format):
     locale = EnglishLocale()
-    return FORMAT_RE.sub(lambda m: format_token(dt, m.group(0), locale),
-                         str_format)
+    return RES['format'].sub(lambda m: format_token(dt, m.group(0), locale),
+                             str_format)
 
 
 class Locale:
@@ -422,12 +423,12 @@ def parse(string, fmt):
     })
 
     # Extract the bracketed expressions to be reinserted later.
-    escaped_fmt = re.sub(ESCAPE_RE, "#" , fmt)
-    escaped_data = re.findall(ESCAPE_RE, fmt)
+    escaped_fmt = re.sub(RES['escape'], "#" , fmt)
+    escaped_data = re.findall(RES['escape'], fmt)
 
     fmt_pattern = escaped_fmt
 
-    for m in FORMAT_RE.finditer(escaped_fmt):
+    for m in RES['format'].finditer(escaped_fmt):
         token = m.group(0)
         try:
             input_re = input_re_map[token]
@@ -529,7 +530,7 @@ def build_datetime(parts):
     timestamp = parts.get('timestamp')
 
     if timestamp:
-        return datetime.fromtimestamp(timestamp, tz=pytz.utc)
+        return datetime.datetime.fromtimestamp(timestamp, tz=pytz.utc)
 
     am_pm = parts.get('am_pm')
     hour = parts.get('hour', 0)
@@ -539,7 +540,7 @@ def build_datetime(parts):
     elif am_pm == 'am' and hour == 12:
         hour = 0
 
-    return datetime(year=parts.get('year', 1), month=parts.get('month', 1),
+    return datetime.datetime(year=parts.get('year', 1), month=parts.get('month', 1),
                     day=parts.get('day', 1), hour=hour, minute=parts.get('minute', 0),
                     second=parts.get('second', 0), microsecond=parts.get('microsecond', 0),
                     tzinfo=parts.get('tzinfo'))
@@ -569,25 +570,25 @@ def map_lookup(input_map, key):
 
 
 def parse_tzinfo(string):
-    if string in ['utc', 'UTC']:
-        tzinfo = pytz.utc
+    """Find the tzinfo object associated with a string."""
+    if string.upper() == 'UTC':
+        return pytz.utc
 
+    # ISO match searches for a string in format '+04:00'
+    iso_match = RES['tzinfo'].match(string)
+    if iso_match:
+        sign, hours, minutes = iso_match.groups()
+        if minutes is None:
+            minutes = 0
+        seconds = int(hours) * 3600 + int(minutes) * 60
+
+        if sign == '-':
+            seconds *= -1
+        tzinfo = datetime.timezone(datetime.timedelta(seconds=seconds))
+
+    # If not, it might be something like 'US/Eastern' that tzinfo can parse..
     else:
-        iso_match = TZINFO_RE.match(string)
-
-        if iso_match:
-            sign, hours, minutes = iso_match.groups()
-            if minutes is None:
-                minutes = 0
-            seconds = int(hours) * 3600 + int(minutes) * 60
-
-            if sign == '-':
-                seconds *= -1
-
-            tzinfo = tz.tzoffset(None, seconds)
-
-        else:
-            tzinfo = pytz.timezone(string)
+        tzinfo = pytz.timezone(string)
 
     if tzinfo is None:
         raise ParserError('Could not parse timezone expression "{0}"', string)
