@@ -62,7 +62,8 @@ def now() -> _datetime.datetime:
 
 
 def combine(date: _datetime.date, time: _datetime.time, tz='UTC') -> _datetime.datetime:
-    """Similar to datetime.datetime.combine, but tz-aware."""
+    """Similar to datetime.datetime.combine, but tz-aware.  The optional
+    tz argument won't override a tz included in the string."""
     dt = _datetime.datetime.combine(date, time)
 
     if not dt.tzinfo:  # The time component might have a tzinfo.
@@ -86,14 +87,13 @@ def to_str(dt: DateOrDateTime, str_format: str) -> str:
     return from_arrow.format_(dt, str_format)
 
 
-def from_str(dt_str: str, str_format: str) -> _datetime.datetime:
-    """Format a string to datetime.  Similar to datetime.strptime."""
-    # todo placeholder
+def from_str(dt_str: str, str_format: str, tz='UTC') -> _datetime.datetime:
+    """Format a string to datetime.  Similar to datetime.strptime. The optional
+    tz argument won't override a tz included in the string."""
     dt = from_arrow.parse(dt_str, str_format)
 
-    if not dt.tzinfo:
-        dt = dt.replace(tzinfo=pytz.utc)
-    return dt
+    if not dt.tzinfo:  # The time component might have a tzinfo.
+        return fix_naive(dt, tz)
 
 
 @_check_aware

@@ -93,7 +93,7 @@ Move from one timezone to another:
     # datetime.datetime(2015, 12, 31, 23, 0, tzinfo=<DstTzInfo 'Europe/Vatican' CET+1:00:00 STD>
 
 
-Combine a date and time into a timezone-aware datetime. If the time has tzinfo, the 'tz' argument is ignored.:
+Combine a date and time into a timezone-aware datetime. If the time has tzinfo, the 'tz' argument is ignored:
 
 .. code-block:: python
 
@@ -139,25 +139,28 @@ Convert a datetime a string. Uses format from Arrow:
     # '2016-04-29 03:30'
 
 
-Convert a string to a datetime. Uses format from Arrow:
+Convert a string to a datetime. Uses format from Arrow. If the str includes tzinfo, the optional tz argument is ignored.:
 
 .. code-block:: python
 
     saturn.from_str('2016-04-29 03:30', 'YYYY-MM-DD hh:mm')
     # datetime.datetime(2016, 4, 29, 3, 30, tzinfo=<UTC>)
 
+    saturn.from_str('2016-04-29 03:30', 'YYYY-MM-DD hh:mm', tz='Africa/Cairo')
+    # datetime.datetime(2016, 4, 29, 3, 30, tzinfo=<DstTzInfo 'Africa/Cairo' EET+2:00:00 STD>)
+
     saturn.from_str('1381685817', 'X')
     # datetime.datetime(2013, 10, 13, 17, 36, 57, tzinfo=<UTC>)
 
 
-Convert a datetime a an ISO-8601 string:
+Convert a datetime to an ISO-8601 string:
 
 .. code-block:: python
 
         saturn.to_iso(saturn.now())
         # '2016-04-29T20:12:05.807558+00:00'
 
-Convert an ISO-8601 string to a datetime.
+Convert an ISO-8601 string to a datetime:
 
 .. code-block:: python
 
@@ -178,5 +181,7 @@ Existing ways to create tz-awar datetimes:
         pytz.timezone('US/Eastern').localize(datetime.datetime.utcnow())
 
         arrow.Arrow(1999, 9, 9, 9, 30, tzinfo=dateutil.tz.gettz('US/Eastern'))
+
+        pytz.timezone('US/Eastern').localize(datetime.datetime.combine(date, time))
 
         dt.astimezone(pytz.timezone('US/Pacific'))
