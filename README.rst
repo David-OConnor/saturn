@@ -1,5 +1,5 @@
-Saturn: Functions for tz-aware datetimes with clean syntax
-==========================================================
+Saturn: Simple functions for tz-aware datetimes
+===============================================
 
 Performs common operations on datetimes with clean syntax, acting as a thin wrapper
 for datetime and pytz. Force timezone-aware
@@ -38,6 +38,7 @@ Included functions
  - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range. Lazy.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
  - move_tz: Change a datetime from one timezone to another.
+ - combine: Similar to datetime.datetime.combine, but always tz-aware.
  - timedelta: Same as datetime.timedelta; you don't have to import datetime.
 
 
@@ -87,8 +88,23 @@ Move from one timezone to another:
 
     dt = saturn.datetime(2016,1,1, tz='Asia/Gaza')
     # datetime.datetime(2016, 1, 1, 0, 0, tzinfo=<DstTzInfo 'Asia/Gaza' EET+2:00:00 STD>)
+
     saturn.move_tz(dt, 'Europe/Vatican')
     # datetime.datetime(2015, 12, 31, 23, 0, tzinfo=<DstTzInfo 'Europe/Vatican' CET+1:00:00 STD>
+
+
+Combine a date and time into a timezone-aware datetime. If the time has tzinfo, the 'tz' argument is ignored.:
+
+.. code-block:: python
+
+    date, time = datetime.date(2016, 3, 2), datetime.time(16, 30)
+
+    saturn.combine(date, time)
+    # datetime.datetime(2016, 3, 2, 16, 30, tzinfo=<UTC>)
+
+    saturn.combine(date, time, tz='Europe/London')
+    # datetime.datetime(2016, 3, 2, 16, 30, tzinfo=<DstTzInfo 'Europe/London' GMT0:00:00 STD>)
+
 
 Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day'
 'hour', 'minute', 'second', 'millisecond', and 'microsecond':
@@ -130,6 +146,9 @@ Convert a string to a datetime. Uses format from Arrow:
     saturn.from_str('2016-04-29 03:30', 'YYYY-MM-DD hh:mm')
     # datetime.datetime(2016, 4, 29, 3, 30, tzinfo=<UTC>)
 
+    saturn.from_str('1381685817', 'X')
+    # datetime.datetime(2013, 10, 13, 17, 36, 57, tzinfo=<UTC>)
+
 
 Convert a datetime a an ISO-8601 string:
 
@@ -146,14 +165,18 @@ Convert an ISO-8601 string to a datetime.
         # datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
 
 
-For details on to_str and from_str syntax, please reference `Arrow's formatting reference <http://arrow.readthedocs.io/en/latest/#tokens>`_
+For details on to_str and from_str syntax, please reference `Arrow's formatting guide <http://arrow.readthedocs.io/en/latest/#tokens>`_.
 
 
 Some syntax we're dodging:
 --------------------------
 
+Existing ways to create tz-awar datetimes:
 
 .. code-block:: python
 
         pytz.timezone('US/Eastern').localize(datetime.datetime.utcnow())
+
         arrow.Arrow(1999, 9, 9, 9, 30, tzinfo=dateutil.tz.gettz('US/Eastern'))
+
+        dt.astimezone(pytz.timezone('US/Pacific'))

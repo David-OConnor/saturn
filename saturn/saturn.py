@@ -61,6 +61,14 @@ def now() -> _datetime.datetime:
     return _datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
 
 
+def combine(date: _datetime.date, time: _datetime.time, tz='UTC') -> _datetime.datetime:
+    """Similar to datetime.datetime.combine, but tz-aware."""
+    dt = _datetime.datetime.combine(date, time)
+
+    if not dt.tzinfo:  # The time component might have a tzinfo.
+        return fix_naive(dt, tz)
+
+
 def fix_naive(dt: _datetime.datetime, tz: str='UTC') -> _datetime.datetime:
     """Convert a tz-naive datetime to tz-aware. Default to UTC"""
     return pytz.timezone(tz).localize(dt)
