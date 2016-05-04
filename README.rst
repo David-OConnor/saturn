@@ -30,16 +30,17 @@ Included functions
 
  - datetime: Return a timezone-aware datetime.datetime object.  Created the same way as datetime.datetime,
    with an optional 'tz' argument for a timezone string. Defaults to UTC.
- - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, from Arrow.
- - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
- - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
- - from_iso: Create a datetime from an isoformat string.
+ - time: Same concept as datimetime; easily create a tz-aware time.
  - now: Find current utc time; timezone-aware.
  - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range. Lazy.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
  - move_tz: Change a datetime from one timezone to another.
  - combine: Similar to datetime.datetime.combine, but always tz-aware.
- - timedelta: Same as datetime.timedelta; you don't have to import datetime.
+ - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, from Arrow.
+ - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
+ - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
+ - from_iso: Create a datetime from an isoformat string.
+ - timedelta and date are included as wrappers for their respective datetime classes, so you don't need to import datetime.
 
 
 Installation
@@ -54,7 +55,7 @@ Basic documentation
 -------------------
 
 Create a timezone-aware datetime. If you don't specify a 'tz' argument, it defaults
-to UTC.:
+to UTC. Works for times too:
 
 .. code-block:: python
 
@@ -63,6 +64,9 @@ to UTC.:
 
     saturn.datetime(2016, 1, 1, 16)
     # datetime.datetime(2016, 1, 1, 16, 0, tzinfo=<UTC>)
+
+    saturn.time(11, 29, 30)
+    datetime.time(11, 29, 30, tzinfo=<UTC>)
 
 
 Make a tz-naive datetime aware:
@@ -93,7 +97,7 @@ Move from one timezone to another:
     # datetime.datetime(2015, 12, 31, 23, 0, tzinfo=<DstTzInfo 'Europe/Vatican' CET+1:00:00 STD>
 
 
-Combine a date and time into a timezone-aware datetime. If the time has tzinfo, the 'tz' argument is ignored:
+Combine a date and time into a timezone-aware datetime. If the time is already aware, the 'tz' argument is ignored:
 
 .. code-block:: python
 
@@ -139,7 +143,7 @@ Convert a datetime a string. Uses format from Arrow:
     # '2016-04-29 03:30'
 
 
-Convert a string to a datetime. Uses format from Arrow. If the str includes tzinfo, the optional tz argument is ignored.:
+Convert a string to a datetime. Uses format from Arrow. If the string includes a timezone, the optional tz argument is ignored:
 
 .. code-block:: python
 
@@ -171,17 +175,65 @@ Convert an ISO-8601 string to a datetime:
 For details on to_str and from_str syntax, please reference `Arrow's formatting guide <http://arrow.readthedocs.io/en/latest/#tokens>`_.
 
 
-Some syntax we're dodging:
+Function input and output:
 --------------------------
-
-Existing ways to create tz-awar datetimes:
 
 .. code-block:: python
 
-        pytz.timezone('US/Eastern').localize(datetime.datetime.utcnow())
+    datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
+             second: int=0, microsecond: int=0, tzinfo=None, tz=None) -> datetime.datetime
+
+    time(hour: int=0, minute: int=0, second: int=0,
+         microsecond: int = 0, tzinfo=None, tz=None) -> datetime.time
+
+    now() -> datetime.datetime
+
+    combine(_date: _datetime.date, _time: _datetime.time, tz: str='UTC') -> datetime.datetime
+
+    fix_naive(dt: TimeOrDatetime, tz: str='UTC') -> datetime.datetime
+
+    to_str(dt: DateOrDatetime, str_format: str) -> str
+
+    from_str(dt_str: str, str_format: str, tz: str='UTC') -> datetime.datetime
+
+    to_iso(dt: DateOrDatetime) -> str
+
+    from_iso(iso_str: str, tz: str='UTC') -> _datetime.datetime
+
+    move_tz(dt: datetime.datetime, tz: str) -> datetime.datetime:
+
+    range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
+             interval: str='day') -> Iterator[datetime.datetime]
+
+
+
+Some syntax we're dodging:
+--------------------------
+
+
+.. code-block:: python
+
+        pytz.timezone('Europe/Berlin').localize(datetime.datetime(1985, 2, 1, 13, 21))
 
         arrow.Arrow(1999, 9, 9, 9, 30, tzinfo=dateutil.tz.gettz('US/Eastern'))
 
-        pytz.timezone('US/Eastern').localize(datetime.datetime.combine(date, time))
+        pytz.timezone('US/Mountain').localize(datetime.datetime.combine(date, time))
 
-        dt.astimezone(pytz.timezone('US/Pacific'))
+        aware_dt.astimezone(pytz.timezone('US/Pacific'))
+
+
+
+
+Replaced by:
+------------
+
+
+.. code-block:: python
+
+        saturn.datetime(1985, 2, 1, 13, 21, tz='Europe/Berlin')
+
+        saturn.datetime(1999, 9, 9, 9, 30, tz='US/Eastern')
+
+        saturn.combine(date, time, 'US/Mountain')
+
+        saturn.move_tz(aware_dt, 'US/Pacific')
