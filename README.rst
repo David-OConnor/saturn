@@ -40,7 +40,7 @@ Included functions
  - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
  - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
  - from_iso: Create a datetime from an isoformat string.
- - timedelta and date are included as wrappers for their respective datetime classes, so you don't need to import datetime.
+ - timedelta, date, and today are included as wrappers for their respective datetime/date classes, so you don't need to import datetime.
 
 
 Installation
@@ -66,7 +66,7 @@ to UTC. Works for times too:
     # datetime.datetime(2016, 1, 1, 16, 0, tzinfo=<UTC>)
 
     saturn.time(11, 29, 30)
-    datetime.time(11, 29, 30, tzinfo=<UTC>)
+    # datetime.time(11, 29, 30, tzinfo=<UTC>)
 
 
 Make a tz-naive datetime aware:
@@ -183,7 +183,7 @@ Function input and output:
     datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
              second: int=0, microsecond: int=0, tzinfo=None, tz=None) -> datetime.datetime
 
-    time(hour: int=0, minute: int=0, second: int=0,
+    time(hour: int, minute: int=0, second: int=0,
          microsecond: int = 0, tzinfo=None, tz=None) -> datetime.time
 
     now() -> datetime.datetime
@@ -198,9 +198,9 @@ Function input and output:
 
     to_iso(dt: DateOrDatetime) -> str
 
-    from_iso(iso_str: str, tz: str='UTC') -> _datetime.datetime
+    from_iso(iso_str: str, tz: str='UTC') -> datetime.datetime
 
-    move_tz(dt: datetime.datetime, tz: str) -> datetime.datetime:
+    move_tz(dt: datetime.datetime, tz: str) -> datetime.datetime
 
     range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
              interval: str='day') -> Iterator[datetime.datetime]
@@ -222,8 +222,6 @@ Some syntax we're dodging:
         aware_dt.astimezone(pytz.timezone('US/Pacific'))
 
 
-
-
 Replaced by:
 ------------
 
@@ -237,3 +235,5 @@ Replaced by:
         saturn.combine(date, time, 'US/Mountain')
 
         saturn.move_tz(aware_dt, 'US/Pacific')
+
+

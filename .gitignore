@@ -5,6 +5,7 @@ __pycache__/
 *~
 Thumbs.db
 *.egg-info/
+.pyirc
 
 # PyCharm
 *.iws

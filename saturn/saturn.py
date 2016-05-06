@@ -4,12 +4,14 @@ from typing import TypeVar, Iterator
 
 import pytz
 
-from . import from_arrow
+from saturn import from_arrow
+# import from_arrow  # Used to make Pycharm's unit tests work.
 
 
-# No need to import datetime if using saturn.
+# No need to import datetime, date, and today if using saturn.
 timedelta = _datetime.timedelta
 date = _datetime.date
+today = _datetime.date.today
 
 DateOrDatetime = TypeVar('DateOrDatetime', _datetime.date, _datetime.datetime)
 TimeOrDatetime = TypeVar('TimeOrDatetime', _datetime.time, _datetime.datetime)
@@ -56,22 +58,18 @@ def _check_aware_input_2args(func):
     return _check_aware_input(func, num_dt_args=2)
 
 
+@_check_aware_output
 def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
-             second: int=0, microsecond: int=0, tzinfo=None, tz=None) -> _datetime.datetime:
-    """Create a datetime instance, with default tzawareness at UTC."""
+             second: int=0, microsecond: int=0, tzinfo=None, tz: str='UTC') -> _datetime.datetime:
+    """Create a datetime instance, with default tzawareness at UTC. A provided
+    tzinfo argument overrides a provided tz string."""
 
     dt = _datetime.datetime(year, month, day, hour, minute, second,
                             microsecond, tzinfo)
-
-    if tz:  # A string timezone is provided
-        return fix_naive(dt, tz)
-    elif dt.tzinfo:  # A timezone object is provided
-        return dt
-    else:  # No timezone provided; assume UTC.
-        return dt.replace(tzinfo=pytz.utc)
+    return dt, tz
 
 
-def time(hour: int=0, minute: int=0, second: int=0,
+def time(hour: int, minute: int=0, second: int=0,
          microsecond: int = 0, tzinfo=None, tz=None) -> _datetime.time:
     """Create a time instance, with default tzawareness at UTC."""
 
