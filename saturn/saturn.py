@@ -1,6 +1,6 @@
 import datetime as _datetime
 from functools import partial, wraps
-from typing import TypeVar, Iterator
+from typing import Callable, TypeVar, Iterator
 
 import pytz
 
@@ -25,7 +25,7 @@ class TzNaiveError(Exception):
 
 def _check_aware_input(func, num_dt_args=1):
     """Force a function that accepts a datetime as first argument to check for
-    timezone-awareness.  Raise an error if the daatetime's naive."""
+    timezone-awareness.  Raise an error if the input's naive."""
     @wraps(func)
     def inner(*args, **kwargs):
         dts = args[:num_dt_args]
@@ -40,7 +40,7 @@ def _check_aware_input(func, num_dt_args=1):
     return inner
 
 
-def _check_aware_output(func):
+def _check_aware_output(func) -> TimeOrDatetime:
     """Check if a function's output is timezone-aware. Func's first output must
     be the dt; second must be a tz. Used  on functions where the result may, or
     may not be tz-aware already. If already, tz is ignored."""
@@ -69,18 +69,12 @@ def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
     return dt, tz
 
 
+@_check_aware_output
 def time(hour: int, minute: int=0, second: int=0,
-         microsecond: int = 0, tzinfo=None, tz=None) -> _datetime.time:
+         microsecond: int = 0, tzinfo=None, tz='UTC') -> _datetime.time:
     """Create a time instance, with default tzawareness at UTC."""
-
     t = _datetime.time(hour, minute, second, microsecond, tzinfo)
-
-    if tz:  # A string timezone is provided
-        return fix_naive(t, tz)
-    elif t.tzinfo:  # A timezone object is provided
-        return t
-    else:  # No timezone provided; assume UTC.
-        return t.replace(tzinfo=pytz.utc)
+    return t, tz
 
 
 def now() -> _datetime.datetime:
@@ -99,12 +93,6 @@ def combine(date_: _datetime.date, time_: _datetime.time, tz: str='UTC') -> _dat
 def fix_naive(dt: TimeOrDatetime, tz: str='UTC') -> _datetime.datetime:
     """Convert a tz-naive datetime to tz-aware. Default to UTC"""
     return pytz.timezone(tz).localize(dt)
-
-
-def _expand(dt: TimeOrDatetime):
-    """Expand arguments from a datetime object."""
-    return dt.year, dt.month, dt.day, dt.hour, dt.minute, dt.second, \
-        dt.microsecond, dt.tzinfo
 
 
 @_check_aware_input
@@ -132,10 +120,16 @@ def from_iso(iso_str: str, tz: str='UTC') -> _datetime.datetime:
     """Convert an ISO 8601 string to a datetime.  The optional
     tz argument won't override a tz included in the string."""
     return from_arrow.parse_iso(iso_str), tz
-    #
-    # if not dt.tzinfo:
-    #     return dt.fix_naive(dt, tz)
-    # return dt
+
+
+@_check_aware_input
+def to_epoch(dt: DateOrDatetime) -> float:
+    return dt.timestamp()
+
+
+@_check_aware_output
+def from_epoch(epoch: float, tz: str='UTC') -> _datetime.datetime:
+    return _datetime.datetime.fromtimestamp(epoch), tz
 
 
 def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
@@ -153,7 +147,7 @@ def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int)
 @_check_aware_input_2args
 def range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
              interval: str='day') -> Iterator[_datetime.datetime]:
-    """Iterate over datetimes or dates, similar to builtin range.."""
+    """Iterate over datetimes or dates, similar to builtin range."""
     intervals = partial(_count_timedelta, (end - start), step)
 
     if interval == 'week':

@@ -4,7 +4,7 @@ Saturn: Simple functions for tz-aware datetimes
 Performs common operations on datetimes with clean syntax, acting as a thin wrapper
 for datetime and pytz. Force timezone-aware
 datetimes. All operations are top-level functions: No dealing with
-a methods from multiple modules and objects.
+methods from multiple modules and objects.
 
 There are several existing modules designed to improve Python's datetime functionality.
 Here's why Saturn is different:
@@ -14,6 +14,8 @@ Here's why Saturn is different:
  - Clean, intuitive syntax and function names.  No boilerplate.
  - Operates exclusively with top-level functions; no sorting through methods
    from multiple objects and modules
+ - Raises an exception if a func is given a tz-naive datetime as input. All datetime
+   outputs are timezone-aware, with an easily-set TZ, defaulting to UTC.
 
 Saturn uses Pytz for timezones. Used as a dependency.:
 `Pytz website <https://pypi.python.org/pypi/pytz/>`_
@@ -40,6 +42,8 @@ Included functions
  - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
  - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
  - from_iso: Create a datetime from an isoformat string.
+ - to_epoch: Wrapper for datetime.datetime's timestamp method, as a function.
+ - from_epoch: Wrapper for datetime.datetime's from_timestamp method, as a function.
  - timedelta, date, and today are included as wrappers for their respective datetime/date classes, so you don't need to import datetime.
 
 
@@ -135,7 +139,7 @@ Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day'
     # 2016-01-05 08:30:00+00:00
 
 
-Convert a datetime a string. Uses format from Arrow:
+Convert a datetime to a string. Uses format from Arrow:
 
 .. code-block:: python
 
@@ -157,19 +161,25 @@ Convert a string to a datetime. Uses format from Arrow. If the string includes a
     # datetime.datetime(2013, 10, 13, 17, 36, 57, tzinfo=<UTC>)
 
 
-Convert a datetime to an ISO-8601 string:
+Convert a datetime to an ISO-8601 string or epoch:
 
 .. code-block:: python
 
         saturn.to_iso(saturn.now())
         # '2016-04-29T20:12:05.807558+00:00'
 
-Convert an ISO-8601 string to a datetime:
+        saturn.to_epoch(saturn.now())
+        # 1461960725.807558
+
+Convert an ISO-8601 string or epoch to a datetime:
 
 .. code-block:: python
 
         saturn.from_iso('2016-04-29T20:12:05.000000+00:00')
         # datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
+
+        saturn.from_epoch(1461960725)
+        # datetime.datetime(2016, 4, 29, 21, 12, 5, tzinfo=<UTC>)
 
 
 For details on to_str and from_str syntax, please reference `Arrow's formatting guide <http://arrow.readthedocs.io/en/latest/#tokens>`_.
@@ -184,7 +194,7 @@ Function input and output:
              second: int=0, microsecond: int=0, tzinfo=None, tz=None) -> datetime.datetime
 
     time(hour: int, minute: int=0, second: int=0,
-         microsecond: int = 0, tzinfo=None, tz=None) -> datetime.time
+         microsecond: int=0, tzinfo=None, tz=None) -> datetime.time
 
     now() -> datetime.datetime
 
@@ -199,6 +209,10 @@ Function input and output:
     to_iso(dt: DateOrDatetime) -> str
 
     from_iso(iso_str: str, tz: str='UTC') -> datetime.datetime
+
+    to_epoch(dt: DateOrDatetime) -> float:
+
+    from_epoch(epoch: float, tz: str='UTC') -> _datetime.datetime:
 
     move_tz(dt: datetime.datetime, tz: str) -> datetime.datetime
 

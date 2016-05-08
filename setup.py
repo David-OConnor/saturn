@@ -13,7 +13,7 @@ setup(
     author="David O'Connor",
     author_email="david.alan.oconnor@gmail.com",
     url='https://github.com/David-OConnor/saturn',
-    description="Functions for clean, easy datetime syntax; always tz-aware.",
+    description="Simple functions for tz-aware datetimes.",
     long_description=readme,
     license="Apache 2.0",
     keywords="datetime, pytz, timezone, tzinfo",

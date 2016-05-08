@@ -571,11 +571,12 @@ def parse_tzinfo(string):
         sign, hours, minutes = iso_match.groups()
         if minutes is None:
             minutes = 0
-        seconds = int(hours) * 3600 + int(minutes) * 60
 
-        if sign == '-':
-            seconds *= -1
-        tzinfo = datetime.timezone(datetime.timedelta(seconds=seconds))
+        sign = -1 if sign == '-' else 1
+        hours, minutes = int(hours), int(minutes)
+
+        tzinfo = datetime.timezone(sign * datetime.timedelta(hours=hours,
+                                                             minutes=minutes))
 
     # If not, it might be something like 'US/Eastern' that tzinfo can parse..
     else:
