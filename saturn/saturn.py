@@ -5,8 +5,6 @@ from typing import Callable, TypeVar, Iterator
 import pytz
 
 from saturn import from_arrow
-# import from_arrow  # Used to make Pycharm's unit tests work.
-
 
 # No need to import datetime, date, and today if using saturn.
 timedelta = _datetime.timedelta
@@ -40,7 +38,7 @@ def _check_aware_input(func, num_dt_args=1):
     return inner
 
 
-def _check_aware_output(func) -> TimeOrDatetime:
+def _check_aware_output(func):
     """Check if a function's output is timezone-aware. Func's first output must
     be the dt; second must be a tz. Used  on functions where the result may, or
     may not be tz-aware already. If already, tz is ignored."""
@@ -71,7 +69,7 @@ def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
 
 @_check_aware_output
 def time(hour: int, minute: int=0, second: int=0,
-         microsecond: int = 0, tzinfo=None, tz='UTC') -> _datetime.time:
+         microsecond: int = 0, tzinfo=None, tz: str='UTC') -> _datetime.time:
     """Create a time instance, with default tzawareness at UTC."""
     t = _datetime.time(hour, minute, second, microsecond, tzinfo)
     return t, tz

@@ -3,7 +3,7 @@ import unittest
 
 import pytz
 
-import saturn
+from saturn import saturn
 
 # todo run checks by setting tzinfo and dates/times
 # todo directly instead of localize/astiemzone when possible.

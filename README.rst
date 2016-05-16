@@ -17,6 +17,10 @@ Here's why Saturn is different:
  - Raises an exception if a func is given a tz-naive datetime as input. All datetime
    outputs are timezone-aware, with an easily-set TZ, defaulting to UTC.
 
+This project doesn't tackle the deeper problems with Python's datetimes that can arise
+from timezone and localization conflicts. It aims to make working with dateimtes easier by providing a
+concise, consistent, and expressive API; and preventing naive datetimes from entering your code.
+
 Saturn uses Pytz for timezones. Used as a dependency.:
 `Pytz website <https://pypi.python.org/pypi/pytz/>`_
 Pytz is licensed under the MIT license.
@@ -191,10 +195,10 @@ Function input and output:
 .. code-block:: python
 
     datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
-             second: int=0, microsecond: int=0, tzinfo=None, tz=None) -> datetime.datetime
+             second: int=0, microsecond: int=0, tzinfo=None, tz: str='UTC') -> datetime.datetime
 
     time(hour: int, minute: int=0, second: int=0,
-         microsecond: int=0, tzinfo=None, tz=None) -> datetime.time
+         microsecond: int=0, tzinfo=None, tz: str='UTC') -> datetime.time
 
     now() -> datetime.datetime
 
