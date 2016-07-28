@@ -59,8 +59,8 @@ Installation
     pip install saturn
 
 
-Basic documentation
--------------------
+Documentation
+-------------
 
 Create a timezone-aware datetime. If you don't specify a 'tz' argument, it defaults
 to UTC. Works for times too:

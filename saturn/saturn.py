@@ -18,7 +18,7 @@ TimeOrDatetime = TypeVar('TimeOrDatetime', _datetime.time, _datetime.datetime)
 class TzNaiveError(Exception):
     pass
 
-# todo reorder func arguments to be curry-friendly? Needs toolz to support annotations, i guess
+# todo reorder func arguments to be curry-friendly? Needs toolz to support annotations.
 
 
 def _check_aware_input(func, num_dt_args=1):
@@ -137,7 +137,7 @@ def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
     return dt.astimezone(pytz.timezone(tz))
 
 
-def _count_timedelta(delta: _datetime.timedelta, step, seconds_in_interval: int) -> int:
+def _count_timedelta(delta: _datetime.timedelta, step: int, seconds_in_interval: int) -> int:
     """Helper function for iterate.  Finds the number of intervals in the timedelta."""
     return int(delta.total_seconds() / (seconds_in_interval * step))
 
