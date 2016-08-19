@@ -6,10 +6,10 @@ for datetime and pytz. Force timezone-aware
 datetimes. All operations are top-level functions: No dealing with
 methods from multiple modules and objects.
 
-There are several existing modules designed to improve Python's datetime functionality.
+There are several existing modules designed to improve Python's datetimes.
 Here's why Saturn is different:
 
- - Uses native datetime.datetime and datetime.timedelta types for compatibility and speed
+ - Uses native datetime types for compatibility and speed
  - Only one import required
  - Clean, intuitive syntax and function names.  No boilerplate.
  - Operates exclusively with top-level functions; no sorting through methods
@@ -36,7 +36,7 @@ Included functions
 
  - datetime: Return a timezone-aware datetime.datetime object.  Created the same way as datetime.datetime,
    with an optional 'tz' argument for a timezone string. Defaults to UTC.
- - time: Same concept as datimetime; easily create a tz-aware time.
+ - time: Same concept as datetime.time; easily create a tz-aware time.
  - now: Find current utc time; timezone-aware.
  - range_dt: Iterate over datetimes, with a customizable interval. Similar to builtin range. Lazy.
  - fix_naive: Convert a timezone-naive datetime to an aware one.
