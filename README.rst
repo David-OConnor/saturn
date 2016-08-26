@@ -48,6 +48,7 @@ Included functions
  - from_iso: Create a datetime from an isoformat string.
  - to_epoch: Wrapper for datetime.datetime's timestamp method, as a function.
  - from_epoch: Wrapper for datetime.datetime's from_timestamp method, as a function.
+ - split: Split a datetime into date and time components.  Useful because datetime's .time() method strips timezone info.
  - timedelta, date, and today are included as wrappers for their respective datetime/date classes, so you don't need to import datetime.
 
 
@@ -175,6 +176,7 @@ Convert a datetime to an ISO-8601 string or epoch:
         saturn.to_epoch(saturn.now())
         # 1461960725.807558
 
+
 Convert an ISO-8601 string or epoch to a datetime:
 
 .. code-block:: python
@@ -187,6 +189,15 @@ Convert an ISO-8601 string or epoch to a datetime:
 
 
 For details on to_str and from_str syntax, please reference `Arrow's formatting guide <http://arrow.readthedocs.io/en/latest/#tokens>`_.
+
+Split a datetime into date and time components; keeps tzinfo, unlike datetime.time().
+
+.. code-block:: python
+
+    dt = saturn.datetime(2016, 3, 2, 16, 30, 1, 500, tz='US/Mountain')
+    date, time = saturn.split(dt)
+    # datetime.date(2016, 3, 2)
+    # datetime.time(16, 30, 1, 500, tzinfo=<DstTzInfo 'US/Mountain' MST-1 day, 17:00:00 STD>)
 
 
 Function input and output:
@@ -202,7 +213,7 @@ Function input and output:
 
     now() -> datetime.datetime
 
-    combine(_date: _datetime.date, _time: _datetime.time, tz: str='UTC') -> datetime.datetime
+    combine(_date: datetime.date, _time: _datetime.time, tz: str='UTC') -> datetime.datetime
 
     fix_naive(dt: TimeOrDatetime, tz: str='UTC') -> datetime.datetime
 
@@ -222,6 +233,8 @@ Function input and output:
 
     range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
              interval: str='day') -> Iterator[datetime.datetime]
+
+    split(dt: datetime.datetime) -> Tuple[_datetime.date, _datetime.time]:
 
 
 

@@ -1,6 +1,6 @@
 import datetime as _datetime
 from functools import partial, wraps
-from typing import Callable, TypeVar, Iterator
+from typing import Callable, TypeVar, Iterator, Tuple
 
 import pytz
 
@@ -69,7 +69,7 @@ def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
 
 @_check_aware_output
 def time(hour: int, minute: int=0, second: int=0,
-         microsecond: int = 0, tzinfo=None, tz: str='UTC') -> _datetime.time:
+         microsecond: int=0, tzinfo=None, tz: str='UTC') -> _datetime.time:
     """Create a time instance, with default tzawareness at UTC."""
     t = _datetime.time(hour, minute, second, microsecond, tzinfo)
     return t, tz
@@ -179,3 +179,10 @@ def range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
     else:
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \
             'microsecond' or 'millisecond'.")
+
+
+def split(dt: _datetime) -> Tuple[_datetime.date, _datetime.time]:
+    """Split a datetime into date and time components.  Useful over calling
+    .date() and .time() methods, since that dumps tzinfo for the time component."""
+    time_ = time(dt.hour, dt.minute, dt.second, dt.microsecond, dt.tzinfo)
+    return dt.date(), time_
