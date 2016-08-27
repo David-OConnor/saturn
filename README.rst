@@ -119,6 +119,16 @@ Combine a date and time into a timezone-aware datetime. If the time is already a
     # datetime.datetime(2016, 3, 2, 16, 30, tzinfo=<DstTzInfo 'Europe/London' GMT0:00:00 STD>)
 
 
+Split a datetime into date and time components; keeps tzinfo, unlike datetime.time().
+
+.. code-block:: python
+
+    dt = saturn.datetime(2016, 3, 2, 16, 30, 1, 500, tz='US/Mountain')
+    date, time = saturn.split(dt)
+    # datetime.date(2016, 3, 2)
+    # datetime.time(16, 30, 1, 500, tzinfo=<DstTzInfo 'US/Mountain' MST-1 day, 17:00:00 STD>)
+
+
 Iterate through a range of datetimes. Valid intervals are 'week', 'month', 'day'
 'hour', 'minute', 'second', 'millisecond', and 'microsecond':
 
@@ -190,15 +200,6 @@ Convert an ISO-8601 string or epoch to a datetime:
 
 For details on to_str and from_str syntax, please reference `Arrow's formatting guide <http://arrow.readthedocs.io/en/latest/#tokens>`_.
 
-Split a datetime into date and time components; keeps tzinfo, unlike datetime.time().
-
-.. code-block:: python
-
-    dt = saturn.datetime(2016, 3, 2, 16, 30, 1, 500, tz='US/Mountain')
-    date, time = saturn.split(dt)
-    # datetime.date(2016, 3, 2)
-    # datetime.time(16, 30, 1, 500, tzinfo=<DstTzInfo 'US/Mountain' MST-1 day, 17:00:00 STD>)
-
 
 Function input and output:
 --------------------------
@@ -252,6 +253,9 @@ Some syntax we're dodging:
 
         aware_dt.astimezone(pytz.timezone('US/Pacific'))
 
+        aware_time = datetime.time(aware_dt.hour, aware_dt.minute, aware_dt.second,
+            aware_dt.microsecond, aware_dt.tzinfo)
+
 
 Replaced by:
 ------------
@@ -266,5 +270,7 @@ Replaced by:
         saturn.combine(date, time, 'US/Mountain')
 
         saturn.move_tz(aware_dt, 'US/Pacific')
+
+        _, aware_time = saturn.split(aware_dt)
 
 

@@ -88,6 +88,14 @@ def combine(date_: _datetime.date, time_: _datetime.time, tz: str='UTC') -> _dat
     return _datetime.datetime.combine(date_, time_), tz
 
 
+@_check_aware_input
+def split(dt: _datetime) -> Tuple[_datetime.date, _datetime.time]:
+    """Split a datetime into date and time components.  Useful over calling
+    .date() and .time() methods, since that dumps tzinfo for the time component."""
+    time_ = time(dt.hour, dt.minute, dt.second, dt.microsecond, dt.tzinfo)
+    return dt.date(), time_
+
+
 def fix_naive(dt: TimeOrDatetime, tz: str='UTC') -> _datetime.datetime:
     """Convert a tz-naive datetime to tz-aware. Default to UTC"""
     return pytz.timezone(tz).localize(dt)
@@ -180,9 +188,3 @@ def range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \
             'microsecond' or 'millisecond'.")
 
-
-def split(dt: _datetime) -> Tuple[_datetime.date, _datetime.time]:
-    """Split a datetime into date and time components.  Useful over calling
-    .date() and .time() methods, since that dumps tzinfo for the time component."""
-    time_ = time(dt.hour, dt.minute, dt.second, dt.microsecond, dt.tzinfo)
-    return dt.date(), time_
