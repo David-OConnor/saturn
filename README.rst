@@ -49,6 +49,7 @@ Included functions
  - to_epoch: Wrapper for datetime.datetime's timestamp method, as a function.
  - from_epoch: Wrapper for datetime.datetime's from_timestamp method, as a function.
  - split: Split a datetime into date and time components.  Useful because datetime's .time() method strips timezone info.
+ - add, subtract: Add or subtract to/from a datetime.
  - timedelta, date, and today are included as wrappers for their respective datetime/date classes, so you don't need to import datetime.
 
 
@@ -232,10 +233,17 @@ Function input and output:
 
     move_tz(dt: datetime.datetime, tz: str) -> datetime.datetime
 
+    add(dt: datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
+        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> datetime.datetime:
+
+    subtract(dt: datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
+        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> datetime.datetime:
+
     range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
              interval: str='day') -> Iterator[datetime.datetime]
 
     split(dt: datetime.datetime) -> Tuple[_datetime.date, _datetime.time]:
+
 
 
 

@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/saturn" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/tests" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.5.1 (~/anaconda3/bin/python)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.5.0 (C:\Users\david\Anaconda3\python.exe)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="TestRunnerService">

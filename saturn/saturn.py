@@ -57,8 +57,8 @@ def _check_aware_input_2args(func):
 
 
 @_check_aware_output
-def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
-             second: int=0, microsecond: int=0, tzinfo=None, tz: str='UTC') -> _datetime.datetime:
+def datetime(year: float, month: float, day: float, hour: float=0, minute: float=0,
+             second: float=0, microsecond: float=0, tzinfo=None, tz: str='UTC') -> _datetime.datetime:
     """Create a datetime instance, with default tzawareness at UTC. A provided
     tzinfo argument overrides a provided tz string."""
 
@@ -148,6 +148,23 @@ def move_tz(dt: _datetime.datetime, tz: str) -> _datetime.datetime:
 def _count_timedelta(delta: _datetime.timedelta, step: int, seconds_in_interval: int) -> int:
     """Helper function for iterate.  Finds the number of intervals in the timedelta."""
     return int(delta.total_seconds() / (seconds_in_interval * step))
+
+
+@_check_aware_input
+def add(dt: _datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
+        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> _datetime.datetime:
+    return dt + timedelta(days=days, seconds=seconds, microseconds=microseconds,
+                          milliseconds=milliseconds, minutes=minutes, hours=hours,
+                          weeks=weeks)
+
+
+def subtract(dt: _datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
+             milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> _datetime.datetime:
+    return dt - timedelta(days=days, seconds=seconds,
+                          microseconds=microseconds,
+                          milliseconds=milliseconds, minutes=minutes,
+                          hours=hours,
+                          weeks=weeks)
 
 
 @_check_aware_input_2args
