@@ -158,6 +158,7 @@ def add(dt: _datetime.datetime, days: float=0, seconds: float=0, microseconds: f
                           weeks=weeks)
 
 
+@_check_aware_input
 def subtract(dt: _datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
              milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> _datetime.datetime:
     return dt - timedelta(days=days, seconds=seconds,

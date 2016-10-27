@@ -234,10 +234,10 @@ Function input and output:
     move_tz(dt: datetime.datetime, tz: str) -> datetime.datetime
 
     add(dt: datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
-        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> datetime.datetime:
+        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> datetime.datetime
 
     subtract(dt: datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
-        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> datetime.datetime:
+        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> datetime.datetime
 
     range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
              interval: str='day') -> Iterator[datetime.datetime]
