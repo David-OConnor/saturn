@@ -207,11 +207,11 @@ Function input and output:
 
 .. code-block:: python
 
-    datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
-             second: int=0, microsecond: int=0, tzinfo=None, tz: str='UTC') -> datetime.datetime
+    datetime(year: float, month: float, day: float, hour: float=0, minute: float=0,
+             second: float=0, microsecond: float=0, tzinfo=None, tz: str='UTC') -> datetime.datetime
 
-    time(hour: int, minute: int=0, second: int=0,
-         microsecond: int=0, tzinfo=None, tz: str='UTC') -> datetime.time
+    time(hour: float, minute: float=0, second: float=0,
+         microsecond: float=0, tzinfo=None, tz: str='UTC') -> datetime.time
 
     now() -> datetime.datetime
 

@@ -1,6 +1,6 @@
 import datetime as _datetime
 from functools import partial, wraps
-from typing import Callable, TypeVar, Iterator, Tuple
+from typing import Iterator, Tuple, Union
 
 import pytz
 
@@ -11,9 +11,8 @@ timedelta = _datetime.timedelta
 date = _datetime.date
 today = _datetime.date.today
 
-DateOrDatetime = TypeVar('DateOrDatetime', _datetime.date, _datetime.datetime)
-TimeOrDatetime = TypeVar('TimeOrDatetime', _datetime.time, _datetime.datetime)
-
+DateOrDatetime = Union[_datetime.date, _datetime.datetime]
+TimeOrDatetime = Union[_datetime.time, _datetime.datetime]
 
 class TzNaiveError(Exception):
     pass
@@ -57,8 +56,8 @@ def _check_aware_input_2args(func):
 
 
 @_check_aware_output
-def datetime(year: float, month: float, day: float, hour: float=0, minute: float=0,
-             second: float=0, microsecond: float=0, tzinfo=None, tz: str='UTC') -> _datetime.datetime:
+def datetime(year: int, month: int, day: int, hour: int=0, minute: int=0,
+             second: int=0, microsecond: int=0, tzinfo=None, tz: str='UTC') -> _datetime.datetime:
     """Create a datetime instance, with default tzawareness at UTC. A provided
     tzinfo argument overrides a provided tz string."""
 
@@ -108,10 +107,12 @@ def to_str(dt: DateOrDatetime, str_format: str) -> str:
 
 
 @_check_aware_output
-def from_str(dt_str: str, str_format: str, tz: str='UTC') -> _datetime.datetime:
+def from_str(dt_str: str, str_format: str, tz: str='UTC') -> \
+        Union[_datetime.datetime, _datetime.datetime, _datetime.time]:
     """Format a string to datetime.  Similar to datetime.strptime. The optional
     tz argument won't override a tz included in the string."""
-    return from_arrow.parse(dt_str, str_format), tz
+    parsed_dt = from_arrow.parse(dt_str, str_format), tz
+    return parsed_dt
 
 
 @_check_aware_input
@@ -151,16 +152,16 @@ def _count_timedelta(delta: _datetime.timedelta, step: int, seconds_in_interval:
 
 
 @_check_aware_input
-def add(dt: _datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
-        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> _datetime.datetime:
+def add(dt: DateOrDatetime, days: float=0, seconds: float=0, microseconds: float=0,
+        milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> DateOrDatetime:
     return dt + timedelta(days=days, seconds=seconds, microseconds=microseconds,
                           milliseconds=milliseconds, minutes=minutes, hours=hours,
                           weeks=weeks)
 
 
 @_check_aware_input
-def subtract(dt: _datetime.datetime, days: float=0, seconds: float=0, microseconds: float=0,
-             milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> _datetime.datetime:
+def subtract(dt: DateOrDatetime, days: float=0, seconds: float=0, microseconds: float=0,
+             milliseconds: float=0, minutes: float=0, hours: float=0, weeks: float=0) -> DateOrDatetime:
     return dt - timedelta(days=days, seconds=seconds,
                           microseconds=microseconds,
                           milliseconds=milliseconds, minutes=minutes,
