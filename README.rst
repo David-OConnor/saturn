@@ -44,6 +44,7 @@ Included functions
  - combine: Similar to datetime.datetime.combine, but always tz-aware.
  - to_str: Similar to datetime.datetime.strftime, but with a cleaner format string, from Arrow.
  - from_str: Similar to datetime.datetime.strptime, but with a cleaner format string, from Arrow.
+   Returns date, datetime, or time objects as needed.
  - to_iso: Wrapper for datetime.datetime's isoformat() method, as a function.
  - from_iso: Create a datetime from an isoformat string.
  - to_epoch: Wrapper for datetime.datetime's timestamp method, as a function.
@@ -191,7 +192,7 @@ Convert a datetime to an ISO-8601 string or epoch:
 
 Convert an ISO-8601 string or epoch to a datetime:
 
-.. code-block:: python
+.. code-block:: pythonL
 
         saturn.from_iso('2016-04-29T20:12:05.000000+00:00')
         # datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
@@ -213,7 +214,7 @@ Check if a range of times overlaps.
 
         saturn.overlaps(start1, end1, start2, end2)
         # True
-        saturn.overlaps(start1, end1, start2 = saturn.datetime(2018, 1, 1, 13), end2)
+        saturn.overlaps(start1, end1, saturn.datetime(2018, 1, 1, 13), end2)
         # False
 
 
@@ -236,7 +237,7 @@ Function input and output:
 
     to_str(dt: DateOrDatetime, str_format: str) -> str
 
-    from_str(dt_str: str, str_format: str, tz: str='UTC') -> datetime.datetime
+    from_str(dt_str: str, str_format: str, tz: str='UTC') -> DateOrTimeOrDatetime
 
     to_iso(dt: DateOrDatetime) -> str
 

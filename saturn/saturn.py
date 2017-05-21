@@ -108,13 +108,21 @@ def to_str(dt: DateOrDatetime, str_format: str) -> str:
     return from_arrow.format_(dt, str_format)
 
 
-@_check_aware_output
 def from_str(dt_str: str, str_format: str, tz: str='UTC') -> \
         Union[_datetime.datetime, _datetime.datetime, _datetime.time]:
     """Format a string to datetime.  Similar to datetime.strptime. The optional
     tz argument won't override a tz included in the string."""
-    parsed_dt = from_arrow.parse(dt_str, str_format), tz
-    return parsed_dt
+    parsed_dt = from_arrow.parse(dt_str, str_format)
+
+    # Return date, time, or datetime objects as appropriate.
+    if not any([parsed_dt.hour, parsed_dt.minute, parsed_dt.second, parsed_dt.microsecond]):
+        return parsed_dt.date()
+    elif parsed_dt.year == 1 and parsed_dt.month == 1 and parsed_dt.day == 1:
+        parsed_dt = parsed_dt.time()
+
+    # We don't use the decorator here, since checking for TZ doesn't apply to Dates.
+    if not parsed_dt.tzinfo:  # The time component might have a tzinfo.
+        return fix_naive(parsed_dt, tz)
 
 
 @_check_aware_input
