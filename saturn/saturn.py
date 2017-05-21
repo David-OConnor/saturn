@@ -13,6 +13,8 @@ today = _datetime.date.today
 
 DateOrDatetime = Union[_datetime.date, _datetime.datetime]
 TimeOrDatetime = Union[_datetime.time, _datetime.datetime]
+DateOrTimeOrDatetime = Union[_datetime.date, _datetime.time, _datetime.datetime]
+
 
 class TzNaiveError(Exception):
     pass
@@ -207,3 +209,8 @@ def range_dt(start: DateOrDatetime, end: DateOrDatetime, step: int=1,
         raise AttributeError("Interval must be 'week', 'day', 'hour' 'second', \
             'microsecond' or 'millisecond'.")
 
+
+def overlaps(start1: DateOrTimeOrDatetime, end1: DateOrTimeOrDatetime,
+             start2: DateOrTimeOrDatetime, end2: DateOrTimeOrDatetime) -> bool:
+    """Return True if the Two dts overlap False otherwise."""
+    return (start1 <= end2 and end1 >= start2) or (start2 <= end1 and end2 >= start1)

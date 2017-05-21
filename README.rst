@@ -50,6 +50,7 @@ Included functions
  - from_epoch: Wrapper for datetime.datetime's from_timestamp method, as a function.
  - split: Split a datetime into date and time components.  Useful because datetime's .time() method strips timezone info.
  - add, subtract: Add or subtract to/from a datetime.
+ - overlaps: Deterine if two date/time/datetime ranges overlap.
  - timedelta, date, and today are included as wrappers for their respective datetime/date classes, so you don't need to import datetime.
 
 
@@ -201,6 +202,20 @@ Convert an ISO-8601 string or epoch to a datetime:
 
 For details on to_str and from_str syntax, please reference `Arrow's formatting guide <http://arrow.readthedocs.io/en/latest/#tokens>`_.
 
+Check if a range of times overlaps.
+
+.. code-block:: python
+
+        start1 = saturn.datetime(2018, 1, 1, 9)
+        end1 = saturn.datetime(2018, 1, 1, 12)
+        start2 = saturn.datetime(2018, 1, 1, 11)
+        end2 = saturn.datetime(2018, 1, 1, 17)
+
+        saturn.overlaps(start1, end1, start2, end2)
+        # True
+        saturn.overlaps(start1, end1, start2 = saturn.datetime(2018, 1, 1, 13), end2)
+        # False
+
 
 Function input and output:
 --------------------------
@@ -244,6 +259,8 @@ Function input and output:
 
     split(dt: datetime.datetime) -> Tuple[_datetime.date, _datetime.time]:
 
+    overlaps(start1: DateOrTimeOrDatetime, start2: DateOrTimeOrDatetime,
+             end1: DateOrTimeOrDatetime, end2: DateOrTimeOrDatetime) -> bool:
 
 
 
