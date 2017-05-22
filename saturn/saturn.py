@@ -121,7 +121,7 @@ def from_str(dt_str: str, str_format: str, tz: str='UTC') -> \
         return parsed_dt.date()
 
     elif parsed_dt.year == 1 and parsed_dt.month == 1 and parsed_dt.day == 1:
-        parsed_dt = fix_naive(parsed_dt.time()), tz
+        parsed_dt = parsed_dt.time()
 
     # We don't use the decorator here, since checking for TZ doesn't apply to Dates.
     if not parsed_dt.tzinfo:  # The time component might have a tzinfo.
