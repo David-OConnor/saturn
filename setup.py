@@ -5,7 +5,7 @@ with open('README.rst') as f:
 
 setup(
     name="Saturn",
-    version="0.3.2",
+    version="0.3.3",
     packages=find_packages(),
 
     install_requires=['pytz>=2016.3'],
