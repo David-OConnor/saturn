@@ -4,8 +4,8 @@ with open('README.rst') as f:
     readme = f.read()
 
 setup(
-    name="Saturn",
-    version="0.3.4",
+    name="saturn",
+    version="0.3.5",
     packages=find_packages(),
 
     install_requires=['pytz>=2016.3'],

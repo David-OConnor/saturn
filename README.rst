@@ -58,7 +58,7 @@ Included functions
 Installation
 ------------
 
-.. code-block:: python
+.. code-block:: bash
 
     pip install saturn
 
@@ -192,7 +192,7 @@ Convert a datetime to an ISO-8601 string or epoch:
 
 Convert an ISO-8601 string or epoch to a datetime:
 
-.. code-block:: pythonL
+.. code-block:: python
 
         saturn.from_iso('2016-04-29T20:12:05.000000+00:00')
         # datetime.datetime(2016, 4, 29, 20, 12, 05, tzinfo=<UTC>)
